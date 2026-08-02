@@ -31,16 +31,15 @@ ECG path. Schematic AFE: [`analog/sar_afe.spice`](../analog/sar_afe.spice).
 
 External gain should place R-peaks at ADC codes **≥ 2200** (SNN peak threshold).
 
-## Magic / layout checklist (next step)
+## Magic / layout checklist
 
-This pass ships SPICE + digital bridge only (no Magic/xschem in CI). For GDS:
+Current repo includes Magic GDS/LEF from `mag/` (DEF pins + AFE paint + LibreLane
+`sar_digital` child). Before shuttle submission:
 
-1. Use Tiny Tapeout analog template `tt_analog_1x2.def` (or matching tile size).
-2. Place AFE (S/H + CDAC + comparator) from sky130 devices; keep `analog/` topology.
-3. Connect `ua[0]` → `vin_ecg`, `ua[1]` → `vref`.
-4. Harden digital SAR; route `sample`, `dac_bits[11:0]`, `cmp_out` to the AFE.
-5. Remove / replace `analog_frontend_stub` for the silicon netlist.
-6. Run LVS (digital + AFE) and DRC before tapeout submission.
+1. Replace painted AFE with `sky130_fd_pr` devices; keep `analog/` topology.
+2. Finish routing `sample`, `dac_bits[11:0]`, `cmp_out`, `ua[0]/1]` to the digital macro.
+3. Tie unused digital outs to GND; DRC + netgen LVS of the full tile.
+4. Re-run `cd mag && make update_gds` and confirm GitHub `gds` / `precheck` Actions.
 
 ## Timing
 

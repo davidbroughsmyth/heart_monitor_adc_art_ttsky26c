@@ -26,12 +26,13 @@ Requires `ngspice` on `PATH`.
 
 ## PDK / silicon
 
-This tree uses **ideal** sources so it runs without `PDK_ROOT`. For sky130 tapeout:
+Ideal SPICE proves topology without `PDK_ROOT`. Layout lives under [`mag/`](../mag/):
 
-1. Replace switches/caps with `sky130_fd_pr` devices (or xschem symbols).
-2. Replace `comparator` with a StrongARM or preamp+latch cell.
-3. Place/route in Magic against Tiny Tapeout `tt_analog_1x2.def`.
-4. Connect `ua[0]`/`ua[1]` and digital `sample` / `dac_bits` / `cmp_out` to the hardened SAR.
-5. LVS against `sar_afe` + digital netlist.
+1. OpenLane-hardened `sar_digital` macro (`mag/macros/sar_digital/`).
+2. Magic AFE paint (`layout_afe.tcl`) + TT `tt_analog_1x2.def` pins.
+3. Top export: `gds/` + `lef/` (see `mag/Makefile`).
+
+Still to harden before shuttle: sky130_fd_pr device swap for S/H/CDAC/CMP,
+complete digital↔AFE routing, and netgen LVS of the full tile.
 
 RTL cocotb continues to use `src/analog_frontend_stub.v` under `-DDIGITAL_CMP_MODEL`.

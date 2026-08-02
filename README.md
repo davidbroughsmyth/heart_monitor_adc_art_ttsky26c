@@ -40,9 +40,25 @@ cd analog && ./run_tb.sh
 
 ## GDS / layout
 
-CI expects `gds/<top>.gds` and `lef/<top>.lef` (Magic layout). RTL + ideal SPICE
-are in-repo now; place the AFE and harden the digital SAR before the GDS workflow
-will pass.
+Checked-in Magic layout:
+
+- `gds/tt_um_davidbroughsmyth_ecg_sar12.gds`
+- `lef/tt_um_davidbroughsmyth_ecg_sar12.lef`
+
+Rebuild (Docker + local volare sky130A PDK):
+
+```sh
+cd mag
+make update_gds          # DEF init + AFE paint + place sar_digital
+# optional: make harden  # re-run OpenLane on src/sar_digital.v
+```
+
+See [mag/](mag/) for `magic_init_project.tcl`, `layout_afe.tcl`, `integrate.tcl`.
+Digital macro artifacts: `mag/macros/sar_digital/`.
+
+**Status:** digital SAR is OpenLane-hardened (DRC-clean macro) and placed in the 1×2
+tile; AFE is a compact Mag paint of S/H + CDAC plates + inverter-chain CMP
+matching `analog/` topology — refine devices and full pin routing before tapeout LVS.
 
 ## What is Tiny Tapeout?
 
