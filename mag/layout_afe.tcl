@@ -64,6 +64,18 @@ label cmp_out FreeSans 0.5 -met1
 box 70um 100um 155um 210um
 label sar_digital_area FreeSans 1.0 -met4
 
+# Wire ua[0]/1] pins into adjacent met4 (TT analog pin check)
+# ua[0] @ 151.81–152.71, 0–1 → hold MOM
+box 151.81um 0.50um 152.71um 30um
+paint met4
+box 145um 28um 152.71um 30um
+paint met4
+# ua[1] @ 132.49–133.39, 0–1 → vref rail
+box 132.49um 0.50um 133.39um 138um
+paint met4
+box 55um 135um 133.39um 138um
+paint met4
+
 save $TOP
 file mkdir ../gds
 file mkdir ../lef
