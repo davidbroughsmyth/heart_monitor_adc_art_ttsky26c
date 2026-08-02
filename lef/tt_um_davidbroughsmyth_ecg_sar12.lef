@@ -42,8 +42,8 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN ua[1]
     DIRECTION INOUT ;
     USE SIGNAL ;
-    ANTENNAGATEAREA 1915.661987 ;
-    ANTENNADIFFAREA 856.661865 ;
+    ANTENNAGATEAREA 1913.194336 ;
+    ANTENNADIFFAREA 855.770874 ;
     PORT
       LAYER met4 ;
         RECT 132.490 0.000 133.390 1.000 ;
@@ -422,7 +422,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
     USE POWER ;
     PORT
       LAYER met4 ;
-        RECT 1.995 112.000 2.005 113.000 ;
+        RECT 1.000 5.000 3.000 220.760 ;
     END
   END VDPWR
   PIN VGND
@@ -430,27 +430,23 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
     USE GROUND ;
     PORT
       LAYER met4 ;
-        RECT 4.995 112.000 5.005 113.000 ;
+        RECT 4.000 5.000 6.000 220.760 ;
     END
   END VGND
   OBS
       LAYER li1 ;
         RECT 70.520 85.795 149.180 202.925 ;
       LAYER met1 ;
-        RECT 20.000 40.000 150.030 203.080 ;
+        RECT 20.000 40.000 149.180 203.080 ;
       LAYER met2 ;
-        RECT 20.200 20.000 150.010 215.000 ;
+        RECT 20.200 20.000 148.170 215.000 ;
       LAYER met3 ;
         RECT 20.000 22.000 155.000 203.005 ;
       LAYER met4 ;
-        RECT 1.000 113.400 152.710 220.760 ;
-        RECT 1.000 113.000 4.595 113.400 ;
-        RECT 1.000 112.000 1.995 113.000 ;
-        RECT 2.405 112.000 4.595 113.000 ;
-        RECT 1.000 111.600 4.595 112.000 ;
-        RECT 5.405 111.600 152.710 113.400 ;
-        RECT 1.000 1.400 152.710 111.600 ;
-        RECT 1.000 1.000 16.170 1.400 ;
+        RECT 3.400 4.600 3.600 203.080 ;
+        RECT 6.400 4.600 152.710 203.080 ;
+        RECT 3.000 1.400 152.710 4.600 ;
+        RECT 3.000 1.000 16.170 1.400 ;
         RECT 17.870 1.000 35.490 1.400 ;
         RECT 37.190 1.000 54.810 1.400 ;
         RECT 56.510 1.000 74.130 1.400 ;
@@ -458,8 +454,6 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
         RECT 95.150 1.000 112.770 1.400 ;
         RECT 114.470 1.000 132.090 1.400 ;
         RECT 133.790 1.000 151.410 1.400 ;
-      LAYER met5 ;
-        RECT 70.280 101.730 149.420 203.330 ;
   END
 END tt_um_davidbroughsmyth_ecg_sar12
 END LIBRARY

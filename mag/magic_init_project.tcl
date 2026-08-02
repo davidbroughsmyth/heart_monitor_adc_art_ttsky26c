@@ -14,11 +14,8 @@ cellname rename tt_um_template $TOP_LEVEL_CELL
 proc draw_power_stripe {name x} {
     global POWER_STRIPE_WIDTH
     set x2 [expr {$x + $POWER_STRIPE_WIDTH}]
+    # Full stripe geometry becomes the port (TT pin size rules)
     box ${x}um 5um ${x2}um 220.76um
-    paint met4
-    # label at center of stripe
-    set xc [expr {($x + $x2) / 2.0}]
-    box ${xc}um 112um ${xc}um 113um
     paint met4
     label $name FreeSans 0.5 -met4
     port make
