@@ -431,143 +431,15 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
         RECT 4.995 112.000 5.005 113.000 ;
     END
   END VGND
-  PIN vhold
-    DIRECTION INOUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met3 ;
-        RECT 122.000 22.000 143.000 33.000 ;
-    END
-  END vhold
-  PIN b0
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 20.200 40.200 21.300 43.300 ;
-    END
-  END b0
-  PIN b1
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 22.700 40.200 23.800 46.800 ;
-    END
-  END b1
-  PIN b2
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 25.200 40.200 26.300 53.800 ;
-    END
-  END b2
-  PIN b3
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 27.700 40.200 28.800 67.800 ;
-    END
-  END b3
-  PIN b4
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 30.200 40.200 31.300 95.800 ;
-    END
-  END b4
-  PIN b5
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 32.700 40.200 33.800 95.800 ;
-    END
-  END b5
-  PIN b6
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 35.200 40.200 36.300 95.800 ;
-    END
-  END b6
-  PIN b7
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 37.700 40.200 38.800 95.800 ;
-    END
-  END b7
-  PIN b8
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 40.200 40.200 41.300 95.800 ;
-    END
-  END b8
-  PIN b9
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 42.700 40.200 43.800 95.800 ;
-    END
-  END b9
-  PIN b10
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 45.200 40.200 46.300 95.800 ;
-    END
-  END b10
-  PIN b11
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met2 ;
-        RECT 47.700 40.200 48.800 95.800 ;
-    END
-  END b11
-  PIN vdac
-    DIRECTION INOUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met3 ;
-        RECT 20.000 125.000 55.000 130.000 ;
-    END
-  END vdac
-  PIN cmp_out
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER met1 ;
-        RECT 100.000 55.000 108.000 60.000 ;
-    END
-  END cmp_out
   OBS
       LAYER li1 ;
-        RECT 70.000 26.000 149.180 202.925 ;
+        RECT 70.520 85.795 149.180 202.925 ;
       LAYER met1 ;
-        RECT 20.000 60.280 150.030 203.080 ;
-        RECT 20.000 54.720 99.720 60.280 ;
-        RECT 108.280 54.720 150.030 60.280 ;
-        RECT 20.000 40.000 150.030 54.720 ;
+        RECT 20.000 40.000 150.030 203.080 ;
       LAYER met2 ;
-        RECT 40.000 96.080 150.010 215.000 ;
-        RECT 41.580 39.920 42.420 96.080 ;
-        RECT 44.080 39.920 44.920 96.080 ;
-        RECT 46.580 39.920 47.420 96.080 ;
-        RECT 49.080 39.920 150.010 96.080 ;
-        RECT 40.000 20.000 150.010 39.920 ;
+        RECT 20.200 20.000 150.010 215.000 ;
       LAYER met3 ;
-        RECT 65.000 85.715 155.000 203.005 ;
+        RECT 20.000 22.000 155.000 203.005 ;
       LAYER met4 ;
         RECT 1.000 113.400 140.940 220.760 ;
         RECT 1.000 113.000 4.595 113.400 ;
