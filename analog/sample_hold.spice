@@ -1,0 +1,10 @@
+* sample_hold.spice — MOS-proxy sample/hold (ideal switch + hold cap)
+* Silicon swap: sky130 TG + MOM hold capacitor on vin_ecg.
+
+.subckt sample_hold vin sample gnd vhold
+* sample is logic: >0.9 = track
+S1 vin vhold sample gnd sw_track
+Chold vhold gnd 2p
+Rbleed vhold gnd 1e12
+.model sw_track sw vt=0.9 vh=0.05 ron=200 roff=1e12
+.ends sample_hold

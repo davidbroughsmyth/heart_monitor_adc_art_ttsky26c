@@ -1,0 +1,16 @@
+* cdac_12b.spice — ideal 12-bit voltage DAC (behavioral CDAC)
+* Vdac = vref * code / 4096
+* Silicon swap: binary-weighted cap DAC + TG switches to vref/gnd.
+
+.subckt cdac_12b vref gnd dac_out
++ b11 b10 b9 b8 b7 b6 b5 b4 b3 b2 b1 b0
+
+* Reconstruct code from bit voltages (0/1.8 style)
+Bcode code 0 V = V(b0)/1.8 + 2*V(b1)/1.8 + 4*V(b2)/1.8 + 8*V(b3)/1.8
++ + 16*V(b4)/1.8 + 32*V(b5)/1.8 + 64*V(b6)/1.8 + 128*V(b7)/1.8
++ + 256*V(b8)/1.8 + 512*V(b9)/1.8 + 1024*V(b10)/1.8 + 2048*V(b11)/1.8
+
+Bdac dac_out gnd V = V(vref) * V(code) / 4096
+Rpar dac_out gnd 1e12
+
+.ends cdac_12b

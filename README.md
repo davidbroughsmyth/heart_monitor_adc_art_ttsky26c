@@ -1,36 +1,49 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg)
 
-# Tiny Tapeout Analog Project Template
+# heart_monitor_adc (Tiny Tapeout)
 
-- [Read the documentation for project](docs/info.md)
+12-bit ~500 SPS **SAR ADC** companion for the SNN heart monitor
+([snn_lif_neurons_ttsky26c](https://github.com/davidbroughsmyth/snn_lif_neurons_ttsky26c)).
+
+Based on [ttsky-analog-template](https://github.com/TinyTapeout/ttsky-analog-template) (1×2, 2 analog pins).
+
+- [Project docs](docs/info.md)
+- [Demoboard integration](docs/INTEGRATION.md)
+- [Analog AFE (SPICE)](analog/README.md)
+
+## Pinout
+
+| Pin | Signal |
+|---|---|
+| `uo[7:0]` | `adc[7:0]` |
+| `uio[3:0]` | `adc[11:8]` |
+| `uio[4]` | `sample_en` |
+| `ua[0]` | `vin_ecg` (silicon) |
+| `ua[1]` | `vref` (silicon) |
+
+Top module: `tt_um_davidbroughsmyth_ecg_sar12`
+
+## Local RTL test
+
+```sh
+cd test
+python3.13 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+make -B
+```
+
+## Analog SPICE bench
+
+```sh
+cd analog && ./run_tb.sh
+```
+
+## GDS / layout
+
+CI expects `gds/<top>.gds` and `lef/<top>.lef` (Magic layout). RTL + ideal SPICE
+are in-repo now; place the AFE and harden the digital SAR before the GDS workflow
+will pass.
 
 ## What is Tiny Tapeout?
 
-Tiny Tapeout is an educational project that aims to make it easier and cheaper than ever to get your digital designs manufactured on a real chip.
-
-To learn more and get started, visit https://tinytapeout.com.
-
-## Analog projects
-
-For specifications and instructions, see the [analog specs page](https://tinytapeout.com/specs/analog/).
-
-## Enable GitHub actions to build the results page
-
-- [Enabling GitHub Pages](https://tinytapeout.com/faq/#my-github-action-is-failing-on-the-pages-part)
-
-## Resources
-
-- [FAQ](https://tinytapeout.com/faq/)
-- [Digital design lessons](https://tinytapeout.com/digital_design/)
-- [Learn how semiconductors work](https://tinytapeout.com/siliwiz/)
-- [Join the community](https://tinytapeout.com/discord)
-
-## What next?
-
-- [Submit your design to the next shuttle](https://app.tinytapeout.com/).
-- Edit [this README](README.md) and explain your design, how it works, and how to test it.
-- Share your project on your social network of choice:
-  - LinkedIn [#tinytapeout](https://www.linkedin.com/search/results/content/?keywords=%23tinytapeout) [@TinyTapeout](https://www.linkedin.com/company/100708654/)
-  - Mastodon [#tinytapeout](https://chaos.social/tags/tinytapeout) [@matthewvenn](https://chaos.social/@matthewvenn)
-  - X (formerly Twitter) [#tinytapeout](https://twitter.com/hashtag/tinytapeout) [@tinytapeout](https://twitter.com/tinytapeout)
-  - Bluesky [@tinytapeout.com](https://bsky.app/profile/tinytapeout.com)
+https://tinytapeout.com

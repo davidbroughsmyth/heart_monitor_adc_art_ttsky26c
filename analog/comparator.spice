@@ -1,0 +1,7 @@
+* comparator.spice — continuous-time comparator (ideal)
+* cmp_out = 1.8 if vhold >= vdac else 0
+* Silicon swap: sky130 StrongARM or diff-pair + latch.
+
+.subckt comparator vhold vdac gnd cmp_out
+Bcmp cmp_out gnd V = (V(vhold) >= V(vdac)) ? 1.8 : 0
+.ends comparator

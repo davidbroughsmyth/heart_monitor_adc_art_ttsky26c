@@ -1,0 +1,14 @@
+* sar_afe.spice — analog front-end: S/H + CDAC + comparator
+* Analog pads: vin_ecg (ua[0]), vref (ua[1])
+* Digital: sample, b[11:0], cmp_out
+
+.subckt sar_afe vin_ecg vref gnd sample
++ b11 b10 b9 b8 b7 b6 b5 b4 b3 b2 b1 b0
++ cmp_out
+
+Xsh vin_ecg sample gnd vhold sample_hold
+Xdac vref gnd vdac
++ b11 b10 b9 b8 b7 b6 b5 b4 b3 b2 b1 b0 cdac_12b
+Xcmp vhold vdac gnd cmp_out comparator
+
+.ends sar_afe

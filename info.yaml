@@ -1,66 +1,61 @@
 # Tiny Tapeout project information
 project:
-  title:        ""      # Project title
-  author:       ""      # Your name
-  discord:      ""      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
-  description:  ""      # One line description of what your project does
-  language:     "Analog" # other examples include Verilog, Amaranth, VHDL, etc
-  clock_hz:     0       # Clock frequency in Hz (or 0 if not applicable)
+  title:        "heart_monitor_adc"
+  author:       "davidbroughsmyth"
+  discord:      ""
+  description:  "12-bit ~500 SPS SAR ADC companion for SNN heart monitor"
+  language:     "Analog"
+  clock_hz:     50000000
 
-  # How many tiles your design occupies? A single tile is about 167x108 uM.
-  tiles: "1x2"          # Valid values for analog projects: 1x2, 2x2
+  tiles: "1x2"
+  analog_pins: 2
+  uses_vapwr: false
 
-  # How many analog pins does your project use?
-  analog_pins: 2        # Valid values: 0 to 6
-  uses_vapwr: false       # Set to true if your project uses second analog power supply (VAPWR) in addition to 1.8V (VDPWR)
+  top_module:  "tt_um_davidbroughsmyth_ecg_sar12"
 
-  # Your top module name must start with "tt_um_". Make it unique by including your github username:
-  top_module:  "tt_um_example"
-
-  # List your project's source files here. Source files must be in ./src and you must list each source file separately, one per line:
-  source_files:        
+  source_files:
     - "project.v"
+    - "rate_divider.v"
+    - "sar_fsm.v"
+    - "analog_frontend_stub.v"
 
-# The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
-# This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
 pinout:
-  # Inputs
-  ui[0]: ""
-  ui[1]: ""
-  ui[2]: ""
-  ui[3]: ""
-  ui[4]: ""
-  ui[5]: ""
-  ui[6]: ""
-  ui[7]: ""
+  # Inputs — simulation / config: 12-bit vin code into digital comparator model
+  ui[0]: "vin[0]"
+  ui[1]: "vin[1]"
+  ui[2]: "vin[2]"
+  ui[3]: "vin[3]"
+  ui[4]: "vin[4]"
+  ui[5]: "vin[5]"
+  ui[6]: "vin[6]"
+  ui[7]: "vin[7]"
 
-  # Outputs
-  uo[0]: ""
-  uo[1]: ""
-  uo[2]: ""
-  uo[3]: ""
-  uo[4]: ""
-  uo[5]: ""
-  uo[6]: ""
-  uo[7]: ""
+  # Outputs — mirrors SNN heart-monitor ADC consumer bus
+  uo[0]: "adc[0]"
+  uo[1]: "adc[1]"
+  uo[2]: "adc[2]"
+  uo[3]: "adc[3]"
+  uo[4]: "adc[4]"
+  uo[5]: "adc[5]"
+  uo[6]: "adc[6]"
+  uo[7]: "adc[7]"
 
   # Bidirectional pins
-  uio[0]: ""
-  uio[1]: ""
-  uio[2]: ""
-  uio[3]: ""
-  uio[4]: ""
-  uio[5]: ""
-  uio[6]: ""
-  uio[7]: ""
+  uio[0]: "adc[8]"
+  uio[1]: "adc[9]"
+  uio[2]: "adc[10]"
+  uio[3]: "adc[11]"
+  uio[4]: "sample_en"
+  uio[5]: "vin[8]"
+  uio[6]: "vin[9]"
+  uio[7]: "vin[10]"
 
-  # Analog pins - make sure to also set "analog_pins" above, else the pins won't be connected
-  ua[0]: ""
-  ua[1]: ""
+  # Analog pins (silicon)
+  ua[0]: "vin_ecg"
+  ua[1]: "vref"
   ua[2]: ""
   ua[3]: ""
   ua[4]: ""
   ua[5]: ""
 
-# Do not change!
 yaml_version: 6

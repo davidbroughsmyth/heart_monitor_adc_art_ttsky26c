@@ -1,0 +1,82 @@
+* tb_afe.spice — ngspice bench for sar_afe
+* Checks comparator polarity for several DAC codes vs fixed vin.
+
+.include sample_hold.spice
+.include cdac_12b.spice
+.include comparator.spice
+.include sar_afe.spice
+
+Vref vref 0 DC 1.8
+Vin vin_ecg 0 DC {1.8 * 2800 / 4096}
+
+* Track briefly then hold
+Vsample sample 0 PWL(0 1.8 100n 1.8 110n 0)
+
+Vb0 b0 0 DC 0
+Vb1 b1 0 DC 0
+Vb2 b2 0 DC 0
+Vb3 b3 0 DC 0
+Vb4 b4 0 DC 0
+Vb5 b5 0 DC 0
+Vb6 b6 0 DC 0
+Vb7 b7 0 DC 0
+Vb8 b8 0 DC 0
+Vb9 b9 0 DC 0
+Vb10 b10 0 DC 0
+Vb11 b11 0 DC 0
+
+Xa vin_ecg vref 0 sample
++ b11 b10 b9 b8 b7 b6 b5 b4 b3 b2 b1 b0
++ cmp_out sar_afe
+
+.control
+* code 0 → HIGH (vdac=0 < vhold)
+tran 10n 1u
+meas tran c0 FIND v(cmp_out) AT=0.5u
+echo MEASURE_CODE0 cmp=$&c0
+
+* code 4095 → LOW (vdac≈vref > vhold)
+alter Vb0 = 1.8
+alter Vb1 = 1.8
+alter Vb2 = 1.8
+alter Vb3 = 1.8
+alter Vb4 = 1.8
+alter Vb5 = 1.8
+alter Vb6 = 1.8
+alter Vb7 = 1.8
+alter Vb8 = 1.8
+alter Vb9 = 1.8
+alter Vb10 = 1.8
+alter Vb11 = 1.8
+tran 10n 1u
+meas tran cfs FIND v(cmp_out) AT=0.5u
+echo MEASURE_CODE4095 cmp=$&cfs
+
+* code 2048 → HIGH vs vin~2800 (vdac=0.9 < ~1.23)
+alter Vb0 = 0
+alter Vb1 = 0
+alter Vb2 = 0
+alter Vb3 = 0
+alter Vb4 = 0
+alter Vb5 = 0
+alter Vb6 = 0
+alter Vb7 = 0
+alter Vb8 = 0
+alter Vb9 = 0
+alter Vb10 = 0
+alter Vb11 = 1.8
+tran 10n 1u
+meas tran c2048 FIND v(cmp_out) AT=0.5u
+echo MEASURE_CODE2048 cmp=$&c2048
+
+* code 3072 → LOW vs vin~2800 (vdac=1.35 > ~1.23)
+alter Vb10 = 1.8
+alter Vb11 = 1.8
+tran 10n 1u
+meas tran c3072 FIND v(cmp_out) AT=0.5u
+echo MEASURE_CODE3072 cmp=$&c3072
+
+echo AFE_TB_DONE
+.endc
+
+.end
