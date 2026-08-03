@@ -3,7 +3,7 @@
 Companion ADC project: [heart_monitor_adc_ttsky26c](https://github.com/davidbroughsmyth/heart_monitor_adc_ttsky26c)  
 SNN project: [snn_lif_neurons_ttsky26c](https://github.com/davidbroughsmyth/snn_lif_neurons_ttsky26c)
 
-Design overview: [ARCHITECTURE.md](ARCHITECTURE.md) · Datasheet: [info.md](info.md)
+Design overview: [ARCHITECTURE.md](ARCHITECTURE.md) · Datasheet: [info.md](info.md) · Component sheet: [DATASHEET.md](DATASHEET.md)
 
 ## Demoboard wiring
 

@@ -17,6 +17,7 @@ Tiny Tapeout datasheet — heart_monitor_adc / tt_um_davidbroughsmyth_ecg_sar12
 | Resolution | 12-bit |
 
 Architecture details: [ARCHITECTURE.md](ARCHITECTURE.md) ·
+Component datasheet (databook style): [DATASHEET.md](DATASHEET.md) ·
 Demoboard wiring: [INTEGRATION.md](INTEGRATION.md)
 
 ## Features
