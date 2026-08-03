@@ -176,7 +176,9 @@ output `cmp_out` into the FSM. Schematic SPICE: `analog/`; layout: `mag/`.
 **Simulation mode.** With `-DDIGITAL_CMP_MODEL`, comparison uses the digital vin proxy;
 `analog_frontend_stub` stands in for the AFE.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for block diagrams and layout notes.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for block diagrams, the detailed
+[logical circuit (AFE + SAR digital)](ARCHITECTURE.md#logical-circuit-afe--sar-digital),
+and layout notes.
 
 ---
 

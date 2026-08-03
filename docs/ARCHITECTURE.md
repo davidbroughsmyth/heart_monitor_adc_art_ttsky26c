@@ -64,6 +64,56 @@ flowchart TB
 | AFE | S/H + binary CDAC + comparator | [`analog/sar_afe.spice`](../analog/sar_afe.spice), [`mag/`](../mag/) |
 | Stub | Behavioral CMP for cocotb | [`src/analog_frontend_stub.v`](../src/analog_frontend_stub.v) |
 
+## Logical circuit (AFE + SAR digital)
+
+Element-level view of the silicon path: AFE nets feed `sar_digital`
+([`src/sar_digital.v`](../src/sar_digital.v) = `rate_divider` + `sar_fsm`).
+
+```mermaid
+flowchart TB
+  subgraph afeDetail [AFE]
+    vin[ua0_vin_ecg] --> tg[TG_sample]
+    tg --> vhold[vhold]
+    chold[Chold] --- vhold
+    vref[ua1_vref] --> dac[DAC_12b]
+    bits[dac_bits_11_0] --> dac
+    dac --> vdac[vdac]
+    vhold --> cmp[Comparator]
+    vdac --> cmp
+    cmp --> cmpOut[cmp_out]
+  end
+
+  subgraph digDetail [SAR_digital]
+    clk[clk_50MHz] --> rate[rate_divider]
+    rate --> strobe[convert_strobe]
+    strobe --> fsm[sar_fsm]
+    cmpOut --> fsm
+    fsm --> sample[sample]
+    fsm --> bits
+    fsm --> adcOut[adc_out_12]
+    fsm --> sampleEn[sample_en]
+    fsm --> busy[busy]
+  end
+
+  sample --> tg
+  adcOut --> pack[uo_uio_pack]
+  sampleEn --> pack
+  pack --> uoPads[uo_adc_7_0]
+  pack --> uioPads[uio_adc_11_8_sample_en]
+```
+
+**AFE elements** ([`analog/sar_afe.spice`](../analog/sar_afe.spice), [`analog/sky130/`](../analog/sky130/)):
+
+- **TG + Chold** — `sample=1` tracks `vin_ecg` onto `vhold`; `sample=0` holds.
+- **DAC_12b** — `vref` + `dac_bits[11:0]` → trial voltage `vdac`. Ideal SPICE is a capacitive CDAC; sky130 first-pass SPICE uses an R-2R ladder + TG switches.
+- **Comparator** — `cmp_out=1` when `vhold >= vdac`.
+
+**SAR digital elements:**
+
+- **`rate_divider`** — `clk` → `convert_strobe` at 500 SPS (100000 cycles @ 50 MHz).
+- **`sar_fsm`** — on strobe: hold, walk bits 11→0, emit `adc_out` and pulse `sample_en` (see [SAR convert sequence](#sar-convert-sequence)).
+- **Pad packing** — `uo[7:0]=adc[7:0]`; `uio[3:0]=adc[11:8]`; `uio[4]=sample_en`; `uio_oe=0b00011111`.
+
 ## SAR convert sequence
 
 ```mermaid
