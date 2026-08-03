@@ -11,12 +11,13 @@ Schematic-level models of the silicon path:
 |---|---|
 | Ideal SPICE polarity bench | PASS (`./run_tb.sh`) |
 | sky130 PDK SPICE (TG S/H + R-2R CDAC + OTA CMP) | PASS (`./run_tb_sky130.sh`, needs volare PDK) |
-| Magic layout with real `sky130_fd_pr` gencells | First pass in `mag/layout_afe.tcl` |
-| Pin straps to `sar_digital` | Crude met1/met2 in `mag/integrate.tcl` |
-| Full-tile netgen LVS | **Not clean yet** — connectivity / resistor matching TBD |
-| 12-bit INL / ECG metrology | **TBD** — not claimed |
+| Magic layout for TT precheck | **Metal-only** placeholders in `mag/layout_afe.tcl` (CI-safe) |
+| Real-device Mag gencells | Deferred — flat gencell paint broke LEF ORIGIN/SIZE and spilled outside the die |
+| Pin straps to `sar_digital` | Hierarchical child + crude met straps in `mag/integrate.tcl` |
+| Full-tile netgen LVS | **Not done** |
+| 12-bit INL / ECG metrology | **TBD** |
 
-**CI GDS builds** ≠ tapeout-ready AFE. Tiny Tapeout does **not** finish the AFE for you; further device sizing, matched CDAC, finished routing, and LVS are still on the designer.
+**CI GDS builds** use hierarchical Mag (do **not** flatten). Tiny Tapeout does **not** finish the AFE for you; PDK devices must later land in a hierarchical child with FIXED_BBOX inside the 1×2 area.
 
 ## Files
 

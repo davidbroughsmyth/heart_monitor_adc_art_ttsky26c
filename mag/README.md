@@ -25,8 +25,8 @@ Companion SNN may follow the digital guide; this ADC does not.
 
 ```sh
 make start       # TT DEF pins + VDPWR/VGND met4 stripes
-make afe         # real-device AFE gencells (best-effort first pass)
-make integrate   # place sar_digital + signal straps (no met4 power bridges)
+make afe         # metal-only AFE placeholders (precheck-safe)
+make integrate   # place hierarchical sar_digital + straps (never flatten)
 make update_gds  # start + afe + integrate → ../gds ../lef
 make harden      # OpenLane flow for sar_digital only
 ```
@@ -53,6 +53,9 @@ Design sources for OpenLane live under `openlane/sar_digital/` (keep in sync wit
 
 ## AFE first-pass notes
 
-`layout_afe.tcl` instantiates `sky130_fd_pr` nfet/pfet/MIM/m1-res via Magic device generators (S/H, comparator, compact R-2R). Routing to `sample` / `dac_bits` / `cmp_out` is approximate. Full netgen LVS and 12-bit matching are **not** done.
+- **Schematic:** `analog/sky130/` PDK SPICE polarity PASS.
+- **Layout submitted to CI:** metal-only topology markers in `layout_afe.tcl` (same approach as before the gencell attempt).
+- **Do not flatten** the `.mag` / GDS — keep `sar_digital` as a child cell ([TT Mag note](https://tinytapeout.com/specs/analog/)).
+- Real `sky130_fd_pr` Mag gencells must be placed in a **hierarchical child** with a FIXED_BBOX inside the die; painting them flat into the top cell shifted LEF `ORIGIN`/`SIZE` and failed boundary/DRC precheck.
 
 Outputs for CI: `../gds/tt_um_davidbroughsmyth_ecg_sar12.gds` and matching LEF.

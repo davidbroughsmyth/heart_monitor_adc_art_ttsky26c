@@ -59,10 +59,10 @@ make update_gds          # DEF + real-device AFE + place sar_digital
 
 See [mag/README.md](mag/README.md). Digital macro: `mag/macros/sar_digital/`.
 
-**Status:** digital SAR is OpenLane-hardened (met4-max) and placed in the 1×2 tile. AFE is a
-**best-effort first pass** of `sky130_fd_pr` gencells (S/H, R-2R CDAC, OTA CMP) plus crude
-straps — PDK SPICE polarity PASS; full-tile LVS / 12-bit matching still TBD. See
-[analog/README.md](analog/README.md).
+**Status:** digital SAR is OpenLane-hardened (met4-max) and placed **hierarchically** in the 1×2
+tile (do not flatten Mag). AFE layout for CI is metal-only placeholders; PDK SPICE first-pass is
+in `analog/sky130/`. Real-device Mag gencells are deferred (they broke LEF origin / die boundary).
+See [analog/README.md](analog/README.md) and [mag/README.md](mag/README.md).
 
 ## What is Tiny Tapeout?
 

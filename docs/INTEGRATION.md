@@ -35,15 +35,16 @@ External gain should place R-peaks at ADC codes **≥ 2200** (SNN peak threshold
 
 ## Magic / layout checklist
 
-Current repo includes Magic GDS/LEF from `mag/` (DEF pins + **best-effort**
-`sky130_fd_pr` AFE gencells + OpenLane `sar_digital` child). See [`mag/README.md`](../mag/README.md)
+Current repo includes Magic GDS/LEF from `mag/` (DEF pins + metal-only AFE
+placeholders + hierarchical OpenLane `sar_digital` child — **do not flatten**).
+PDK SPICE first-pass: `analog/sky130/`. See [`mag/README.md`](../mag/README.md)
 (do **not** use digital `tt_tool.py --harden` for this analog custom_gds project).
 
 Before trusting silicon / shuttle:
 
-1. Finish pin-accurate routing of `sample`, `dac_bits[11:0]`, `cmp_out`, `ua[0]/1]`.
-2. Match CDAC (R-2R / MIM) to the PDK SPICE in `analog/sky130/`; size for area.
-3. Tie unused digital outs to GND; Magic DRC + **netgen LVS** of the full tile.
+1. Place real `sky130_fd_pr` devices in a hierarchical Mag child with FIXED_BBOX inside the die.
+2. Finish pin-accurate routing of `sample`, `dac_bits[11:0]`, `cmp_out`, `ua[0]/1]`.
+3. Match CDAC to `analog/sky130/`; tie unused digital outs to GND; DRC + netgen LVS.
 4. Re-run `cd mag && make update_gds` and confirm GitHub `gds` / `precheck` Actions.
 
 Lab stimulus: AWG / Analog Discovery into `ua[0]` (0…Vref) — [USER_MANUAL.md](USER_MANUAL.md) §3.4.
