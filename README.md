@@ -7,7 +7,8 @@
 
 Based on [ttsky-analog-template](https://github.com/TinyTapeout/ttsky-analog-template) (1×2, 2 analog pins).
 
-- [Project docs](docs/info.md)
+- [Datasheet](docs/info.md)
+- [Architecture](docs/ARCHITECTURE.md)
 - [Demoboard integration](docs/INTEGRATION.md)
 - [Analog AFE (SPICE)](analog/README.md)
 
