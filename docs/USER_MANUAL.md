@@ -15,6 +15,8 @@ Firmware / board references:
 - [tt-demo-pcb](https://github.com/TinyTapeout/tt-demo-pcb) (RP2350 demoboard)
 - [breakout-pcb](https://github.com/TinyTapeout/breakout-pcb) (ASIC carrier)
 - [tt-micropython-firmware](https://github.com/TinyTapeout/tt-micropython-firmware) (DemoBoard SDK + examples)
+- [Analog Discovery guide](https://tinytapeout.com/guides/analog-discovery/) (WaveForms / AD3 bench)
+- [Local hardening](https://tinytapeout.com/guides/local-hardening/) (digital tops only — this ADC uses custom GDS; see `mag/README.md`)
 
 ---
 
@@ -152,6 +154,32 @@ cd analog && ./run_tb.sh    # ngspice AFE polarity
 - After reset and enough clocks, `uio_out[4]` (`sample_en`) pulses.
 - `uo_out` + `uio_out[3:0]` hold the 12-bit code (even codes on digital proxy).
 - Production silicon rate is 500 SPS at 50 MHz; HIL often uses a slower/faster RP-driven clock — wait for `sample_en` rather than assuming wall time.
+
+### 3.4 Bench instruments (Analog Discovery)
+
+For the **silicon analog path**, an AD3 (or any AWG/scope) can drive and probe `ua[]`. Full WaveForms walkthrough: [TT Analog Discovery guide](https://tinytapeout.com/guides/analog-discovery/).
+
+```mermaid
+flowchart LR
+  awg[AD3_AWG] -->|0_to_Vref| ua0[ua0_vin_ecg]
+  vref[Vref_1V8] --> ua1[ua1_vref]
+  ua0 --> adc[ecg_sar12]
+  ua1 --> adc
+  scope[AD3_Scope] -.-> ua0
+  adc -->|sample_en_bus| dig[uo_uio]
+  scope -.-> dig
+  rp[RP2350] -->|clk_rst_enable| adc
+```
+
+1. Common **GND** between AD3 and demoboard.
+2. AWG → analog header for `ua[0]`; keep stimulus in **0 … Vref** (typ Vref = 1.8 V). Do not use the AD3’s full bipolar range into `ua`.
+3. `ua[1]` = fixed Vref (~1.8 V), not an AWG sweep.
+4. Enable the ADC project; clock/`rst_n` from RP (`ASIC_RP_CONTROL`). Trigger the scope/LA on `sample_en` (`uio[4]`).
+5. QRS recipe for SNN thresholds: baseline mid-low, R-peak so code ≥ 2200 (≈ **0.97 V** at Vref=1.8 V).
+6. If AD3 **Patterns** drive the digital vin proxy: `tt.mode = RPMode.ASIC_MANUAL_INPUTS` so RP and AD3 do not fight; High-Z DIO during demoboard USB boot (see guide `powerupHighZ`).
+7. Optional core supply via AD3 V+ (remove F2) is for characterization only — see the TT guide; not needed for routine ADC bring-up.
+
+MicroPython HIL (§3.1) needs no AWG; AD3 is for real `ua` stimulus / measurement.
 
 ---
 

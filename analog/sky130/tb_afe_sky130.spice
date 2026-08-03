@@ -1,0 +1,78 @@
+* tb_afe_sky130.spice — PDK bench for sky130 sar_afe
+* Generated/used via run_tb_sky130.sh (injects .lib path).
+
+.option scale=1e-6
+
+.include sar_afe.spice
+
+Vdd vdd 0 DC 1.8
+Vref vref 0 DC 1.8
+Vin vin_ecg 0 DC {1.8 * 2800 / 4096}
+
+* Track then hold
+Vsample sample 0 PWL(0 1.8 2u 1.8 2.1u 0)
+
+Vb0 b0 0 DC 0
+Vb1 b1 0 DC 0
+Vb2 b2 0 DC 0
+Vb3 b3 0 DC 0
+Vb4 b4 0 DC 0
+Vb5 b5 0 DC 0
+Vb6 b6 0 DC 0
+Vb7 b7 0 DC 0
+Vb8 b8 0 DC 0
+Vb9 b9 0 DC 0
+Vb10 b10 0 DC 0
+Vb11 b11 0 DC 0
+
+Xa vin_ecg vref 0 vdd sample
++ b11 b10 b9 b8 b7 b6 b5 b4 b3 b2 b1 b0
++ cmp_out sar_afe
+
+.control
+tran 50n 20u
+meas tran c0 FIND v(cmp_out) AT=10u
+echo MEASURE_CODE0 cmp=$&c0
+
+alter Vb0 = 1.8
+alter Vb1 = 1.8
+alter Vb2 = 1.8
+alter Vb3 = 1.8
+alter Vb4 = 1.8
+alter Vb5 = 1.8
+alter Vb6 = 1.8
+alter Vb7 = 1.8
+alter Vb8 = 1.8
+alter Vb9 = 1.8
+alter Vb10 = 1.8
+alter Vb11 = 1.8
+tran 50n 20u
+meas tran cfs FIND v(cmp_out) AT=10u
+echo MEASURE_CODE4095 cmp=$&cfs
+
+alter Vb0 = 0
+alter Vb1 = 0
+alter Vb2 = 0
+alter Vb3 = 0
+alter Vb4 = 0
+alter Vb5 = 0
+alter Vb6 = 0
+alter Vb7 = 0
+alter Vb8 = 0
+alter Vb9 = 0
+alter Vb10 = 0
+alter Vb11 = 1.8
+tran 50n 20u
+meas tran c2048 FIND v(cmp_out) AT=10u
+echo MEASURE_CODE2048 cmp=$&c2048
+
+alter Vb10 = 1.8
+alter Vb11 = 1.8
+tran 50n 20u
+meas tran c3072 FIND v(cmp_out) AT=10u
+echo MEASURE_CODE3072 cmp=$&c3072
+
+echo AFE_TB_DONE
+.endc
+
+.end

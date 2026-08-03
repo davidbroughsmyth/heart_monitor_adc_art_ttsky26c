@@ -1,0 +1,15 @@
+* sample_hold.spice — sky130 TG + MIM hold (best-effort first pass)
+* sample high (1.8 V) = track; low = hold.
+
+.subckt sample_hold vin sample gnd vdd vhold
+* Local invert for PMOS gate
+Xinv_pd sample_b sample gnd vdd sky130_fd_pr__nfet_01v8 W=0.42 L=0.15
+Xinv_pu sample_b sample vdd vdd sky130_fd_pr__pfet_01v8 W=0.84 L=0.15
+
+* CMOS transmission gate
+Xtn vhold sample vin gnd sky130_fd_pr__nfet_01v8 W=1.0 L=0.15
+Xtp vhold sample_b vin vdd sky130_fd_pr__pfet_01v8 W=2.0 L=0.15
+
+* Hold capacitor (~2 µm × 2 µm MIM)
+Xchold vhold gnd sky130_fd_pr__cap_mim_m3_1 W=2 L=2 mf=1
+.ends sample_hold

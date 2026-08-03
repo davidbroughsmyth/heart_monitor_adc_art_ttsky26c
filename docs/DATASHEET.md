@@ -206,6 +206,7 @@ Demoboard detail: [INTEGRATION.md](INTEGRATION.md).
 | Approx. area | 161 µm × 226 µm |
 | Metal | No user met5 (TT power grid) |
 | Supplies | VGND, VDPWR (1.8 V); no VAPWR |
+| Lab stimulus | AWG / AD3: Vin in 0…Vref; see USER_MANUAL §3.4 |
 
 GDS/LEF: `gds/tt_um_davidbroughsmyth_ecg_sar12.gds`,
 `lef/tt_um_davidbroughsmyth_ecg_sar12.lef`.

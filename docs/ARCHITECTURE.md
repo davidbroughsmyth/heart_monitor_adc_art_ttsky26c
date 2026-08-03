@@ -132,8 +132,10 @@ flowchart TB
 - Left: vertical `VDPWR` / `VGND` met4 stripes from DEF init.
 - Lower / mid: AFE metal topology (`layout_afe.tcl`); `ua[0]`/`ua[1]` strapped in.
 - Upper: OpenLane `sar_digital` child (met4-max, no met5).
+- AFE: best-effort `sky130_fd_pr` gencells (not LVS-complete).
 
-Rebuild: `cd mag && make update_gds`. See [`mag/README.md`](../mag/README.md).
+Rebuild: `cd mag && make update_gds`. See [`mag/README.md`](../mag/README.md)
+(analog custom_gds — not digital `tt_tool` local-harden).
 
 ## ECG code mapping
 

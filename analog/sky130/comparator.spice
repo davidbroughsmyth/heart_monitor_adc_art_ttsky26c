@@ -1,0 +1,21 @@
+* comparator.spice — continuous diff-pair + inverters (best-effort)
+* cmp_out high when vhold > vdac.
+
+.subckt comparator vhold vdac gnd vdd cmp_out
+* Diode-stack bias
+Xbp nbias nbias vdd vdd sky130_fd_pr__pfet_01v8 W=0.84 L=1.0
+Xbn nbias nbias gnd gnd sky130_fd_pr__nfet_01v8 W=0.84 L=1.0
+
+Xtail tail nbias gnd gnd sky130_fd_pr__nfet_01v8 W=3.0 L=0.15
+* Vin+ = vhold, Vin- = vdac → d2 rises when vhold > vdac
+Xn1 d1 vhold tail gnd sky130_fd_pr__nfet_01v8 W=2.0 L=0.15
+Xn2 d2 vdac  tail gnd sky130_fd_pr__nfet_01v8 W=2.0 L=0.15
+Xp1 d1 d1 vdd vdd sky130_fd_pr__pfet_01v8 W=3.0 L=0.15
+Xp2 d2 d1 vdd vdd sky130_fd_pr__pfet_01v8 W=3.0 L=0.15
+
+* Two inverters (d2 high → mid low → cmp high)
+Xi0n mid d2 gnd gnd sky130_fd_pr__nfet_01v8 W=1.0 L=0.15
+Xi0p mid d2 vdd vdd sky130_fd_pr__pfet_01v8 W=2.0 L=0.15
+Xi1n cmp_out mid gnd gnd sky130_fd_pr__nfet_01v8 W=0.84 L=0.15
+Xi1p cmp_out mid vdd vdd sky130_fd_pr__pfet_01v8 W=1.68 L=0.15
+.ends comparator

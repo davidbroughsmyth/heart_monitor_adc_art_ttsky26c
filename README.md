@@ -38,7 +38,8 @@ make -B
 ## Analog SPICE bench
 
 ```sh
-cd analog && ./run_tb.sh
+cd analog && ./run_tb.sh           # ideal
+cd analog && ./run_tb_sky130.sh    # sky130 PDK (needs volare)
 ```
 
 ## GDS / layout
@@ -52,16 +53,16 @@ Rebuild (Docker + local volare sky130A PDK):
 
 ```sh
 cd mag
-make update_gds          # DEF init + AFE paint + place sar_digital
-# optional: make harden  # re-run OpenLane on src/sar_digital.v
+make update_gds          # DEF + real-device AFE + place sar_digital
+# optional: make harden  # OpenLane on mag/openlane/sar_digital (then copy macros — see mag/README.md)
 ```
 
-See [mag/](mag/) for `magic_init_project.tcl`, `layout_afe.tcl`, `integrate.tcl`.
-Digital macro artifacts: `mag/macros/sar_digital/`.
+See [mag/README.md](mag/README.md). Digital macro: `mag/macros/sar_digital/`.
 
-**Status:** digital SAR is OpenLane-hardened (DRC-clean macro) and placed in the 1×2
-tile; AFE is a compact Mag paint of S/H + CDAC plates + inverter-chain CMP
-matching `analog/` topology — refine devices and full pin routing before tapeout LVS.
+**Status:** digital SAR is OpenLane-hardened (met4-max) and placed in the 1×2 tile. AFE is a
+**best-effort first pass** of `sky130_fd_pr` gencells (S/H, R-2R CDAC, OTA CMP) plus crude
+straps — PDK SPICE polarity PASS; full-tile LVS / 12-bit matching still TBD. See
+[analog/README.md](analog/README.md).
 
 ## What is Tiny Tapeout?
 

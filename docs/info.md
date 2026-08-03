@@ -116,7 +116,8 @@ cd analog && ./run_tb.sh   # ngspice AFE comparator polarity
 ## External hardware
 
 - **ECG front-end** (instrumentation amp + ~0.5–40 Hz bandpass) into `ua[0]`.
+- Lab: AWG / [Analog Discovery](https://tinytapeout.com/guides/analog-discovery/) into `ua[0]` (0…Vref); see [USER_MANUAL.md §3.4](USER_MANUAL.md#34-bench-instruments-analog-discovery).
 - Wire this tile’s ADC bus to `tt_um_snn_lif_neuron`; share `clk`, `rst_n`, GND.
 - Optional lab path: MCU + commercial 12-bit SAR on the same digital bus.
 
-See [INTEGRATION.md](INTEGRATION.md).
+See [INTEGRATION.md](INTEGRATION.md). Hardening notes: [mag/README.md](../mag/README.md).

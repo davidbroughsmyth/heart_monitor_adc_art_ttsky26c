@@ -35,13 +35,18 @@ External gain should place R-peaks at ADC codes **≥ 2200** (SNN peak threshold
 
 ## Magic / layout checklist
 
-Current repo includes Magic GDS/LEF from `mag/` (DEF pins + AFE paint + LibreLane
-`sar_digital` child). Before shuttle submission:
+Current repo includes Magic GDS/LEF from `mag/` (DEF pins + **best-effort**
+`sky130_fd_pr` AFE gencells + OpenLane `sar_digital` child). See [`mag/README.md`](../mag/README.md)
+(do **not** use digital `tt_tool.py --harden` for this analog custom_gds project).
 
-1. Replace painted AFE with `sky130_fd_pr` devices; keep `analog/` topology.
-2. Finish routing `sample`, `dac_bits[11:0]`, `cmp_out`, `ua[0]/1]` to the digital macro.
-3. Tie unused digital outs to GND; DRC + netgen LVS of the full tile.
+Before trusting silicon / shuttle:
+
+1. Finish pin-accurate routing of `sample`, `dac_bits[11:0]`, `cmp_out`, `ua[0]/1]`.
+2. Match CDAC (R-2R / MIM) to the PDK SPICE in `analog/sky130/`; size for area.
+3. Tie unused digital outs to GND; Magic DRC + **netgen LVS** of the full tile.
 4. Re-run `cd mag && make update_gds` and confirm GitHub `gds` / `precheck` Actions.
+
+Lab stimulus: AWG / Analog Discovery into `ua[0]` (0…Vref) — [USER_MANUAL.md](USER_MANUAL.md) §3.4.
 
 ## Timing
 
@@ -51,6 +56,7 @@ Current repo includes Magic GDS/LEF from `mag/` (DEF pins + AFE paint + LibreLan
 
 ## Two-tile demo
 
-1. Stream ECG (or function-gen QRS) into the front-end → ADC.
+1. Stream ECG or AWG QRS into the front-end → ADC `ua[0]` (Vref on `ua[1]`).
 2. Observe SNN `uo[2:0]` class and `uo[3]` `diag_valid` on each beat window.
 3. `uo[4]` alarm after three consecutive anomaly classes (1/2/4).
+4. Optional bench: [Analog Discovery guide](https://tinytapeout.com/guides/analog-discovery/) + USER_MANUAL §3.4.

@@ -4,7 +4,8 @@ Hardware-in-the-loop tests for the Tiny Tapeout **demo PCB** (RP2350) + ASIC
 **breakout**, using the [tt-micropython-firmware](https://github.com/TinyTapeout/tt-micropython-firmware)
 `DemoBoard` / microcotb API.
 
-See [docs/USER_MANUAL.md](../docs/USER_MANUAL.md) for circuits and procedures.
+See [docs/USER_MANUAL.md](../docs/USER_MANUAL.md) for circuits and procedures
+(including Analog Discovery / AWG on `ua[]`, §3.4).
 
 | Package | Enables | Role |
 |---|---|---|

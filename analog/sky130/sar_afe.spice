@@ -1,0 +1,16 @@
+* sar_afe.spice — sky130 AFE: S/H + CDAC + comparator (best-effort first pass)
+
+.include sample_hold.spice
+.include cdac_12b.spice
+.include comparator.spice
+
+.subckt sar_afe vin_ecg vref gnd vdd sample
++ b11 b10 b9 b8 b7 b6 b5 b4 b3 b2 b1 b0
++ cmp_out
+
+Xsh vin_ecg sample gnd vdd vhold sample_hold
+Xdac vref gnd vdd vdac
++ b11 b10 b9 b8 b7 b6 b5 b4 b3 b2 b1 b0 cdac_12b
+Xcmp vhold vdac gnd vdd cmp_out comparator
+
+.ends sar_afe
