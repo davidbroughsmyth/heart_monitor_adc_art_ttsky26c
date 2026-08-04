@@ -109,6 +109,9 @@ proc ana {cx cy ydn xpin} {
   afe::via3 $xt $ydn
   afe::m4h $ydn $xt $xpin
   m4v $xpin $ydn 0.5   ;# down to the south ua pin (met4)
+  # fill the m4h/m4v L-corner (both are exactly 0.30um wide -> the outer corner
+  # otherwise leaves a sub-min-width met4 notch: MR_met4.WID.1).
+  afe::pbox met4 [expr {$xpin-0.16}] [expr {$ydn-0.16}] [expr {$xpin+0.16}] [expr {$ydn+0.16}]
 }
 ana 12.0 -4.5  8.0 152.26   ;# vin_ecg -> ua[0]
 ana 75.0 -4.0  6.0 132.94   ;# vref   -> ua[1]

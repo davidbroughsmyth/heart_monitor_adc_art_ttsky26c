@@ -64,9 +64,12 @@ wFET [afe::fet pfet 2.00 0.15 [nx] 0.0] vin vhold   sample_b  vdd
 afe::cap 2 2 20.0 0.0
 afe::via2 20.5 0.0; afe::via 20.5 0.0; afe::m1v 20.5 0.0 [T gnd];   afe::via 20.5 [T gnd]
 reg gnd 20.5
-afe::m4h 0.0 17.4 18.5
-afe::via3 17.5 0.0; afe::via2 17.5 0.0; afe::via 17.5 0.0; afe::m1v 17.5 0.0 [T vhold]; afe::via 17.5 [T vhold]
-reg vhold 17.5
+# vhold top-plate access: keep the via3 met3 pad >=1.2um from the MiM bottom
+# plate met3 (capm left edge 18.27 -> bot_plate 18.13; MR_capm.SP.2). At x=16.5
+# the met3 pad right edge is 16.76 (1.37um clear). met4 bridge reaches the plate.
+afe::m4h 0.0 16.3 18.5
+afe::via3 16.5 0.0; afe::via2 16.5 0.0; afe::via 16.5 0.0; afe::m1v 16.5 0.0 [T vhold]; afe::via 16.5 [T vhold]
+reg vhold 16.5
 
 # ===== Row A: Comparator =====
 set X 26.0

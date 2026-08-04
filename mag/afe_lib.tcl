@@ -58,6 +58,15 @@ proc afe::fet {type w l cx cy} {
     set halfx [expr {1.055 + ($l-0.15)*0.5}]
     set gy [expr {$cy + $half + 0.28}]
     set ny [expr {$cy + $half + 1.02}] ;# on the tap ring
+    # The gencell also drops a poly-gate contact met1 pad on the BOTTOM end of
+    # the gate (same gate net, tied through poly). We only route the TOP gate
+    # pad, so the bottom one is left as an isolated 0.29x0.23um met1 shape ->
+    # met1 min-area (MR_met1.AR.1 / met1.6) which TT precheck rejects. Grow it
+    # DOWNWARD only (keep the 0.29um width and the original top edge so no new
+    # met1 spacing to the S/D pads above or the packed neighbours) to
+    # 0.29x0.30 = 0.087um^2 (>=0.083). Same net as the gate, so no short.
+    afe::pbox met1 [expr {$cx-0.145}] [expr {$cy-$half-0.46}] \
+                   [expr {$cx+0.145}] [expr {$cy-$half-0.16}]
     # Riser x's: source/drain just outside their contact so met1 clears the
     # gate met1 pad; gate riser at cx; tap access on the left guard rail.
     return [list \
