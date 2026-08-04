@@ -6,7 +6,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   CLASS BLOCK ;
   FOREIGN tt_um_davidbroughsmyth_ecg_sar12 ;
   ORIGIN 0.000 0.000 ;
-  SIZE 161.000 BY 225.760 ;
+  SIZE 334.880 BY 225.760 ;
   PIN clk
     DIRECTION INPUT ;
     USE SIGNAL ;
@@ -34,6 +34,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN ua[0]
     DIRECTION INOUT ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.870000 ;
     PORT
       LAYER met4 ;
         RECT 151.810 0.000 152.710 1.000 ;
@@ -42,8 +43,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN ua[1]
     DIRECTION INOUT ;
     USE SIGNAL ;
-    ANTENNAGATEAREA 1913.194336 ;
-    ANTENNADIFFAREA 855.770874 ;
+    ANTENNADIFFAREA 10.440000 ;
     PORT
       LAYER met4 ;
         RECT 132.490 0.000 133.390 1.000 ;
@@ -435,16 +435,17 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   END VGND
   OBS
       LAYER li1 ;
-        RECT 70.520 85.795 149.180 202.925 ;
+        RECT 43.200 23.040 274.065 212.925 ;
       LAYER met1 ;
-        RECT 20.000 40.000 149.180 203.080 ;
+        RECT 42.830 18.870 273.390 213.080 ;
       LAYER met2 ;
-        RECT 20.200 20.000 148.170 215.000 ;
+        RECT 42.590 18.870 293.000 225.000 ;
       LAYER met3 ;
-        RECT 20.000 22.000 155.000 203.005 ;
+        RECT 1.300 5.740 293.000 213.005 ;
       LAYER met4 ;
-        RECT 10.000 1.400 152.710 203.080 ;
-        RECT 10.000 1.000 16.170 1.400 ;
+        RECT 6.400 4.600 257.000 213.080 ;
+        RECT 6.000 1.400 257.000 4.600 ;
+        RECT 6.000 1.000 16.170 1.400 ;
         RECT 17.870 1.000 35.490 1.400 ;
         RECT 37.190 1.000 54.810 1.400 ;
         RECT 56.510 1.000 74.130 1.400 ;
@@ -452,6 +453,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
         RECT 95.150 1.000 112.770 1.400 ;
         RECT 114.470 1.000 132.090 1.400 ;
         RECT 133.790 1.000 151.410 1.400 ;
+        RECT 153.110 1.000 257.000 1.400 ;
   END
 END tt_um_davidbroughsmyth_ecg_sar12
 END LIBRARY

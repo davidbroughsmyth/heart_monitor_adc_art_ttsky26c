@@ -16,3 +16,15 @@ mag/openlane/**/runs/
 mag/*.ext
 mag/*.spice
 *.log
+# generated Magic artifacts (regenerable from the .tcl; dense child force-added)
+mag/*.lvs.out
+mag/afe_*.gds
+mag/afe_*.mag
+# debugging scratch
+mag/bb.tcl
+mag/bb2.tcl
+mag/d.tcl
+mag/m.tcl
+mag/res_probe.tcl
+mag/drc_list.tcl
+mag/drc_why.tcl

@@ -35,7 +35,7 @@ flowchart TB
 
   subgraph afe [AFE]
     sh[SampleHold]
-    cdac[CDAC_12b]
+    cdac[R2R_DAC_12b]
     cmp[Comparator]
   end
 
@@ -61,7 +61,7 @@ flowchart TB
 |---|---|---|
 | `rate_divider` | 50 MHz → 500 Hz convert strobe | [`src/rate_divider.v`](../src/rate_divider.v) |
 | `sar_fsm` | Track/hold control, 12 MSB-first trials, emit bus | [`src/sar_fsm.v`](../src/sar_fsm.v) |
-| AFE | S/H + binary CDAC + comparator | [`analog/sar_afe.spice`](../analog/sar_afe.spice), [`mag/`](../mag/) |
+| AFE | S/H + **R-2R** DAC + comparator | [`analog/sar_afe.spice`](../analog/sar_afe.spice), [`mag/`](../mag/) |
 | Stub | Behavioral CMP for cocotb | [`src/analog_frontend_stub.v`](../src/analog_frontend_stub.v) |
 
 ## Logical circuit (AFE + SAR digital)
@@ -105,7 +105,7 @@ flowchart TB
 **AFE elements** ([`analog/sar_afe.spice`](../analog/sar_afe.spice), [`analog/sky130/`](../analog/sky130/)):
 
 - **TG + Chold** — `sample=1` tracks `vin_ecg` onto `vhold`; `sample=0` holds.
-- **DAC_12b** — `vref` + `dac_bits[11:0]` → trial voltage `vdac`. Ideal SPICE is a capacitive CDAC; sky130 first-pass SPICE uses an R-2R ladder + TG switches.
+- **DAC_12b** — `vref` + `dac_bits[11:0]` → trial voltage `vdac`. This is an **R-2R ladder** (not a capacitive CDAC): per-bit inverter + two TG switches select `vref`/`gnd` into each ladder tap. The sky130 SPICE and the LVS-clean Magic layout (`mag/afe_dac`) use real `sky130_fd_pr__res_xhigh_po_0p35` poly resistors (2R/R).
 - **Comparator** — `cmp_out=1` when `vhold >= vdac`.
 
 **SAR digital elements:**
@@ -164,25 +164,42 @@ flowchart TB
 Hardened digital macro: [`mag/macros/sar_digital/`](../mag/macros/sar_digital/)
 (`src/sar_digital.v` wraps FSM + rate divider, no stub).
 
-## Layout floorplan (1×2)
+## Layout floorplan (2×2)
 
-Approximate regions inside `tt_analog_1x2` (~161 × 226 µm):
+Regions inside `tt_analog_2x2` (**334.88 × 225.76 µm**), assembled by
+`mag/build_top_2x2.tcl`:
 
 ```mermaid
 flowchart TB
-  subgraph tile [tt_um_1x2]
-    pwr[VDPWR_VGND_met4_stripes]
-    afeR[AFE_S_H_CDAC_CMP_metal]
-    digR[sar_digital_90x140]
+  subgraph tile [tt_um_2x2]
+    pwr[VDPWR_VGND_met4_stripes_left]
+    digR[sar_digital_90x140_top_south_pins]
+    chan[met3_met4_signal_channel]
+    afeR[afe_analog_dense_253x44_bottom]
   end
-  pwr --- afeR
-  afeR --- digR
+  pwr --- digR
+  digR --- chan
+  chan --- afeR
 ```
 
 - Left: vertical `VDPWR` / `VGND` met4 stripes from DEF init.
-- Lower / mid: AFE metal topology (`layout_afe.tcl`); `ua[0]`/`ua[1]` strapped in.
-- Upper: OpenLane `sar_digital` child (met4-max, no met5).
-- AFE: best-effort `sky130_fd_pr` gencells (not LVS-complete).
+- Top: OpenLane `sar_digital` child (met4-max, no met5), analog pins (`cmp_out`,
+  `sample`, `dac_bits[11:0]`) on its **south edge**, facing down into the channel.
+- Bottom: the **dense** AFE `mag/afe_analog_dense` (S/H + comparator + folded
+  R-2R DAC), **253 × 44 µm**.
+- Between them: a met3-vertical / met4-horizontal channel carries all 14 signals;
+  `vin_ecg`→`ua[0]`, `vref`→`ua[1]` drop to the south analog pins, and
+  `gnd`/`vdd` tie to the `VGND`/`VDPWR` stripes.
+- **Why 2×2 and why "dense":** every `xN2` tile is 225.76 µm tall, so a 140 µm
+  macro + AFE + routing channel only fits if the AFE is short. The one-track-per-net
+  channel route is short-free but area-heavy: single-row `afe_analog` is ~400 × 66 µm;
+  folding the DAC (`afe_analog_folded`) gives 253 × 78 µm; tightening the track
+  pitch to 0.5 µm and closing the row gap (`afe_analog_dense`) gives **253 × 44 µm**
+  — all three LVS-clean vs `sar_afe.spice`. The dense cell is the one placed on-die.
+- **Verified:** signoff DRC = benign `met1.6` only; hierarchical extraction
+  (`make top-verify`) confirms each AFE pin merges with the correct macro/`ua` pin.
+- **Remaining:** digital boundary I/O (`clk`/`rst_n`/`uo_out`/`uio_*`) and macro
+  `VPWR`/`VGND` are left to the TT tile power grid; full-tile LVS is future work.
 
 Rebuild: `cd mag && make update_gds`. See [`mag/README.md`](../mag/README.md)
 (analog custom_gds — not digital `tt_tool` local-harden).

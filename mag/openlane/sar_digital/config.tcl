@@ -4,6 +4,9 @@ set ::env(CLOCK_PORT) "clk"
 set ::env(CLOCK_PERIOD) "20"
 set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 90 140"
+# Consolidate analog-facing pins (cmp_out/sample/dac_bits) on the south edge so
+# they face the afe_analog child strip; keep digital I/O on the north edge.
+set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(PLACE_DENSITY) 0.45
 set ::env(FP_CORE_UTIL) 40
 # Tiny Tapeout analog tiles forbid met5

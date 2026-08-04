@@ -2,14 +2,14 @@
 
 **12-Bit · 500 SPS · Successive-Approximation A/D Converter**
 
-Tiny Tapeout SKY130 · Analog 1×2 tile · Mixed-signal
+Tiny Tapeout SKY130 · Analog 2×2 tile · Mixed-signal
 
 | | |
 |---|---|
 | Device | `tt_um_davidbroughsmyth_ecg_sar12` |
 | Family | heart_monitor_adc |
 | Process | sky130A |
-| Package | TT analog tile 1×2 (~161 µm × 226 µm) |
+| Package | TT analog tile 2×2 (~335 µm × 226 µm) |
 | Analog pins | 2 |
 
 ---
@@ -30,7 +30,7 @@ presents the result on a parallel digital bus with a `sample_en` strobe compatib
 
 - 12-bit resolution (codes 0…4095)
 - Nominal 500 SPS throughput from 50 MHz `clk`
-- On-chip rate divider, SAR FSM, sample/hold, CDAC, and comparator interface
+- On-chip rate divider, SAR FSM, sample/hold, R-2R DAC, and comparator interface
 - Parallel output bus: `adc[11:0]` + `sample_en` (SNN-compatible)
 - Two analog pads: `vin_ecg`, `vref`
 - Digital bring-up path via pin vin proxy (simulation / lab)
@@ -167,11 +167,17 @@ sequenceDiagram
 
 **Rate divider.** Divides `clk` to assert `convert_strobe` every 100000 cycles (500 SPS).
 
-**SAR FSM.** On strobe: hold input, walk bits 11→0 comparing held vin to the CDAC trial
+**SAR FSM.** On strobe: hold input, walk bits 11→0 comparing held vin to the DAC trial
 code, assemble the 12-bit result, then assert `sample_en` for four clocks.
 
-**Analog front-end.** Sample/hold on `vin_ecg`, binary-weighted CDAC to `vref`, comparator
-output `cmp_out` into the FSM. Schematic SPICE: `analog/`; layout: `mag/`.
+**Analog front-end.** Sample/hold on `vin_ecg`, **12-bit R-2R ladder DAC** (per-bit
+inverter + TG switches selecting `vref`/`gnd`) producing `vdac`, and a comparator
+driving `cmp_out` into the FSM. Schematic SPICE: `analog/`; connected real-device
+Magic layout `mag/afe_analog` is netgen-LVS-clean vs `analog/sky130/sar_afe.spice`
+(a 2-row folded variant `mag/afe_analog_folded`, 253×78 µm, is also LVS-clean). The
+**dense** variant `mag/afe_analog_dense` (253×44 µm, same netlist) is placed and
+routed to the `sar_digital` macro in the **2×2** top (`mag/build_top_2x2.tcl`):
+DRC-clean (benign `met1.6` only) with extraction-verified AFE↔macro connectivity.
 
 **Simulation mode.** With `-DDIGITAL_CMP_MODEL`, comparison uses the digital vin proxy;
 `analog_frontend_stub` stands in for the AFE.
@@ -204,8 +210,8 @@ Demoboard detail: [INTEGRATION.md](INTEGRATION.md).
 | | |
 |---|---|
 | Form factor | Tiny Tapeout analog template |
-| Tile size | 1×2 |
-| Approx. area | 161 µm × 226 µm |
+| Tile size | 2×2 |
+| Approx. area | 335 µm × 226 µm |
 | Metal | No user met5 (TT power grid) |
 | Supplies | VGND, VDPWR (1.8 V); no VAPWR |
 | Lab stimulus | AWG / AD3: Vin in 0…Vref; see USER_MANUAL §3.4 |

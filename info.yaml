@@ -7,7 +7,7 @@ project:
   language:     "Analog"
   clock_hz:     50000000
 
-  tiles: "1x2"
+  tiles: "2x2"
   analog_pins: 2
   uses_vapwr: false
 

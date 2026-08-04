@@ -1,0 +1,24 @@
+* dacslice.spice — one R-2R bit slice (LVS reference for mag/afe_slice.tcl).
+* Mirrors one bit of cdac_12b.spice but with real sky130 poly resistors so the
+* extracted layout matches (netgen compares resistors by device + l/w).
+*   node = ladder tap; 2R (drawn 3.5 -> l=3.34) shunts snk into node,
+*   R    (drawn 1.75 -> l=1.59) is the series arm node..nout.
+* Resistor guard rings are tied to gnd.
+
+.subckt tg a b en enb gnd vdd
+Xn a en b gnd sky130_fd_pr__nfet_01v8 W=1.0 L=0.15
+Xp a enb b vdd sky130_fd_pr__pfet_01v8 W=2.0 L=0.15
+.ends tg
+
+.subckt bit_drive bit bitb gnd vdd
+Xn bitb bit gnd gnd sky130_fd_pr__nfet_01v8 W=0.42 L=0.15
+Xp bitb bit vdd vdd sky130_fd_pr__pfet_01v8 W=0.84 L=0.15
+.ends bit_drive
+
+.subckt dacslice bit vref gnd vdd node nout
+Xdb bit bitb gnd vdd bit_drive
+Xtr snk vref bit  bitb gnd vdd tg
+Xtg snk gnd  bitb bit  gnd vdd tg
+XR2 snk  node gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR  nout node gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+.ends dacslice

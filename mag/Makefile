@@ -8,8 +8,22 @@ DOCKER = docker run --rm --platform linux/arm64 \
 	-e PDK_ROOT=/build/pdk -e PDK=sky130A \
 	-w /work/mag $(IMAGE)
 
-.PHONY: start afe integrate update_gds harden magic-shell
+.PHONY: start afe integrate update_gds top top-verify harden magic-shell
 
+# ---- 2x2 connected flow (real dense AFE routed to the sar_digital macro) ----
+# build_top_2x2.tcl is self-contained: imports the TT 2x2 template, places the
+# dense AFE + sar_digital macro, routes the analog interface, writes gds/lef.
+top:
+	$(DOCKER) bash -lc 'magic -noconsole -dnull -rcfile /build/pdk/sky130A/libs.tech/magic/sky130A.magicrc build_top_2x2.tcl'
+
+update_gds: top
+
+# rebuild + hierarchical extract (EXTRACT=1) to dump top_hier.spice for a
+# connectivity check of the AFE<->macro interface.
+top-verify:
+	$(DOCKER) bash -lc 'EXTRACT=1 magic -noconsole -dnull -rcfile /build/pdk/sky130A/libs.tech/magic/sky130A.magicrc build_top_2x2.tcl'
+
+# ---- legacy metal-only 1x2 placeholder flow (kept for reference) ----
 start:
 	$(DOCKER) bash -lc 'magic -noconsole -dnull -rcfile /build/pdk/sky130A/libs.tech/magic/sky130A.magicrc magic_init_project.tcl'
 
@@ -18,8 +32,6 @@ afe:
 
 integrate:
 	$(DOCKER) bash -lc 'magic -noconsole -dnull -rcfile /build/pdk/sky130A/libs.tech/magic/sky130A.magicrc integrate.tcl'
-
-update_gds: start afe integrate
 
 harden:
 	docker run --rm --platform linux/arm64 \

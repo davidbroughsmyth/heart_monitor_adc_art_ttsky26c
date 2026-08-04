@@ -10,7 +10,7 @@ Tiny Tapeout datasheet — heart_monitor_adc / tt_um_davidbroughsmyth_ecg_sar12
 | | |
 |---|---|
 | Top module | `tt_um_davidbroughsmyth_ecg_sar12` |
-| Tiles | 1×2 |
+| Tiles | 2×2 |
 | Analog pins | 2 (`ua[0]` vin_ecg, `ua[1]` vref) |
 | Clock | 50 MHz |
 | Sample rate | 500 SPS (production) |
@@ -23,7 +23,7 @@ Demoboard wiring: [INTEGRATION.md](INTEGRATION.md)
 
 ## Features
 
-- Binary-search SAR with sample/hold, capacitive DAC, and comparator interface
+- Binary-search SAR with sample/hold, 12-bit R-2R DAC, and comparator interface
 - Digital bus matches SNN ADC consumer (`uo` / `uio` + `sample_en`)
 - RTL sim path via pin vin proxy + behavioral comparator (no SPICE required)
 - Silicon path: Magic AFE + OpenLane-hardened `sar_digital` on TT analog template
@@ -33,11 +33,11 @@ Demoboard wiring: [INTEGRATION.md](INTEGRATION.md)
 ```mermaid
 flowchart LR
   ua0[ua0_vin_ecg] --> sh[SampleHold]
-  ua1[ua1_vref] --> cdac[CDAC_12b]
+  ua1[ua1_vref] --> dac[R2R_DAC_12b]
   sar[sar_fsm] -->|sample| sh
-  sar -->|dac_bits| cdac
+  sar -->|dac_bits| dac
   sh --> cmp[Comparator]
-  cdac --> cmp
+  dac --> cmp
   cmp -->|cmp_out| sar
   rate[rate_divider] -->|strobe| sar
   sar --> bus[uo_uio_sample_en]

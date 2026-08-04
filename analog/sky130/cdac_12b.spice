@@ -1,5 +1,9 @@
-* cdac_12b.spice — R-2R ladder DAC with sky130 TG switches (best-effort)
-* Electrically correct for polarity sims; layout may use poly/MOM later.
+* cdac_12b.spice — R-2R ladder DAC with sky130 TG switches and REAL poly
+* resistors (sky130_fd_pr__res_xhigh_po_0p35, rho=2000 ohm/sq, guard->gnd).
+*   2R (drawn 3.5um -> extracted l=3.34) ~ 19k ; R (drawn 1.75 -> l=1.59) ~ 9.1k.
+* Ratio stays ~2:1 so polarity/behaviour holds; lengths chosen so the extracted
+* Magic layout (mag/afe_dac.tcl) matches net-for-net under netgen (which compares
+* poly resistors by device + l/w, not ohms).
 
 .subckt tg a b en enb gnd vdd
 Xn a en b gnd sky130_fd_pr__nfet_01v8 W=1.0 L=0.15
@@ -54,32 +58,32 @@ Xt10g snk10 gnd  b10b b10 gnd vdd tg
 Xt11r snk11 vref b11 b11b gnd vdd tg
 Xt11g snk11 gnd  b11b b11 gnd vdd tg
 
-* R-2R ladder (R=10k). snk11 = MSB near dac_out.
+* R-2R ladder (poly resistors; 3rd terminal = guard ring tied to gnd).
 * Topology: dac_out -- R -- n10 -- R -- n9 ... -- R -- n0 -- 2R -- gnd
 *           each snk_i -- 2R -- node
-Rterm n0 gnd 20k
-R2_0 snk0 n0 20k
-R0 n0 n1 10k
-R2_1 snk1 n1 20k
-R1 n1 n2 10k
-R2_2 snk2 n2 20k
-R2 n2 n3 10k
-R2_3 snk3 n3 20k
-R3 n3 n4 10k
-R2_4 snk4 n4 20k
-R4 n4 n5 10k
-R2_5 snk5 n5 20k
-R5 n5 n6 10k
-R2_6 snk6 n6 20k
-R6 n6 n7 10k
-R2_7 snk7 n7 20k
-R7 n7 n8 10k
-R2_8 snk8 n8 20k
-R8 n8 n9 10k
-R2_9 snk9 n9 20k
-R9 n9 n10 10k
-R2_10 snk10 n10 20k
-R10 n10 dac_out 10k
-R2_11 snk11 dac_out 20k
+XRterm n0 gnd gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR2_0 snk0 n0 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR0 n0 n1 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+XR2_1 snk1 n1 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR1 n1 n2 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+XR2_2 snk2 n2 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR2 n2 n3 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+XR2_3 snk3 n3 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR3 n3 n4 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+XR2_4 snk4 n4 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR4 n4 n5 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+XR2_5 snk5 n5 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR5 n5 n6 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+XR2_6 snk6 n6 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR6 n6 n7 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+XR2_7 snk7 n7 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR7 n7 n8 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+XR2_8 snk8 n8 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR8 n8 n9 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+XR2_9 snk9 n9 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR9 n9 n10 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+XR2_10 snk10 n10 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+XR10 n10 dac_out gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
+XR2_11 snk11 dac_out gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
 
 .ends cdac_12b

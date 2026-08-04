@@ -5,7 +5,7 @@
 12-bit ~500 SPS **SAR ADC** companion for the SNN heart monitor
 ([snn_lif_neurons_ttsky26c](https://github.com/davidbroughsmyth/snn_lif_neurons_ttsky26c)).
 
-Based on [ttsky-analog-template](https://github.com/TinyTapeout/ttsky-analog-template) (1×2, 2 analog pins).
+Based on [ttsky-analog-template](https://github.com/TinyTapeout/ttsky-analog-template) (2×2, 2 analog pins).
 
 - [Datasheet](docs/info.md) (Tiny Tapeout)
 - [Component datasheet](docs/DATASHEET.md) (databook style)
@@ -60,10 +60,11 @@ make update_gds          # DEF + real-device AFE + place sar_digital
 
 See [mag/README.md](mag/README.md). Digital macro: `mag/macros/sar_digital/`.
 
-**Status:** digital SAR is OpenLane-hardened (met4-max) and placed **hierarchically** in the 1×2
-tile (do not flatten Mag). AFE layout for CI is metal-only placeholders; PDK SPICE first-pass is
-in `analog/sky130/`. Real-device Mag gencells are deferred (they broke LEF origin / die boundary).
-See [analog/README.md](analog/README.md) and [mag/README.md](mag/README.md).
+**Status:** digital SAR is OpenLane-hardened (met4-max) and placed **hierarchically** in a **2×2**
+tile (do not flatten Mag). The **real-device dense AFE** (`mag/afe_analog_dense`, 253×44 µm,
+LVS-clean vs `analog/sky130/sar_afe.spice`) is placed and routed to the `sar_digital` macro by
+`mag/build_top_2x2.tcl` — DRC-clean (benign `met1.6` only), with extraction-verified AFE↔macro
+connectivity. See [analog/README.md](analog/README.md) and [mag/README.md](mag/README.md).
 
 ## What is Tiny Tapeout?
 

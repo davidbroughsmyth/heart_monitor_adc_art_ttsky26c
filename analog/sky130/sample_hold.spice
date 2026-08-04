@@ -3,7 +3,7 @@
 
 .subckt sample_hold vin sample gnd vdd vhold
 * Local invert for PMOS gate
-Xinv_pd sample_b sample gnd vdd sky130_fd_pr__nfet_01v8 W=0.42 L=0.15
+Xinv_pd sample_b sample gnd gnd sky130_fd_pr__nfet_01v8 W=0.42 L=0.15
 Xinv_pu sample_b sample vdd vdd sky130_fd_pr__pfet_01v8 W=0.84 L=0.15
 
 * CMOS transmission gate
