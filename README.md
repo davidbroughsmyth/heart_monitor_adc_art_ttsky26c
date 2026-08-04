@@ -10,6 +10,7 @@ Based on [ttsky-analog-template](https://github.com/TinyTapeout/ttsky-analog-tem
 - [Datasheet](docs/info.md) (Tiny Tapeout)
 - [Component datasheet](docs/DATASHEET.md) (databook style)
 - [Architecture](docs/ARCHITECTURE.md)
+- [How a SAR ADC works](docs/HOW_A_SAR_WORKS.md) (primer)
 - [User manual](docs/USER_MANUAL.md) (demoboard + HIL)
 - [Demoboard integration](docs/INTEGRATION.md)
 - [Analog AFE (SPICE)](analog/README.md)
