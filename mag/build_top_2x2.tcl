@@ -68,9 +68,11 @@ box ${DX}um ${DY}um [expr {$DX+1}]um [expr {$DY+1}]um
 getcell sar_digital
 
 # ===== AFE<->macro interface (low channel, ytr in 53..64) =====
-# macro SOUTH pin x offsets (macro-local): cmp_out, sample, dac_bits[0..11]
-array set PINX {cmp_out 2.85 sample 9.29}
-for {set i 0} {$i<12} {incr i} { set PINX(b$i) [expr {15.73+6.44*$i}] }
+# macro SOUTH pin x offsets (macro-local) = pin RECT CENTRES from sar_digital.lef
+# (each pin is a 0.28um met2 tab; centre = left_edge + 0.14 so the via2 lands
+# centred on the pin, not on its left edge).
+array set PINX {cmp_out 2.99 sample 9.43}
+for {set i 0} {$i<12} {incr i} { set PINX(b$i) [expr {15.87+6.44*$i}] }
 proc sig {cx cy net ytr} {
   global DY DX PINX aox aoy
   set xt [expr {$aox+$cx}] ; set yt [expr {$aoy+$cy}]
