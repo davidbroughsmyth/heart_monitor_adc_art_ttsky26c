@@ -57,17 +57,27 @@ Done ✓ / remaining before trusting silicon / shuttle:
    LVS-clean vs `sar_afe.spice`. Getting *shorter* (not just narrower) is what lets
    it stack under the 140 µm macro (tile height is a fixed 225.76 µm for every
    `xN2`).
-5. ✓ **Top-level fit + routing (2×2):** `mag/build_top_2x2.tcl` bumps the design to
-   a **2×2** tile (334.88 × 225.76 µm), places the dense AFE (bottom) + `sar_digital`
-   (top), and routes the full interface — `sample`, `dac_bits[11:0]`, `cmp_out`
-   (met3/met4 channel), `vin_ecg`→`ua[0]`, `vref`→`ua[1]`, `gnd`→`VGND`,
-   `vdd`→`VDPWR`. Signoff DRC = benign `met1.6` only; hierarchical extraction
-   (`make top-verify`) confirms every AFE pin merges with the correct macro/`ua`
-   pin. `info.yaml` `tiles` is now `2x2`.
-6. **Remaining:** route the digital boundary I/O (`clk`/`rst_n`/`uo_out`/`uio_*`)
-   and macro `VPWR`/`VGND` (currently left to the TT tile power grid); full-tile
-   netgen LVS (top layout vs complete gate + AFE netlist); confirm GitHub
-   `gds` / `precheck` Actions on the 2×2.
+5. ✓ **Complete top-level integration (2×2):** `mag/build_top_2x2.tcl` bumps the
+   design to a **2×2** tile (334.88 × 225.76 µm) and stacks the dense AFE (bottom)
+   + `sar_digital` (top) with a routing channel **below** the macro (AFE↔macro
+   interface) and **above** it (digital I/O to the north boundary pins). It routes
+   **everything**:
+   - AFE↔macro: `sample`, `cmp_out`, `dac_bits[11:0]` (14-net met3/met4 channel);
+   - analog in: `vin_ecg`→`ua[0]`, `vref`→`ua[1]` (south pins);
+   - **all 26 digital boundary nets** — `clk`, `rst_n`, `uo_out[7:0]`,
+     `uio_out[7:0]`, `uio_oe[7:0]` — macro-north → tile-north (top channel; track
+     order solved from the vertical-conflict graph so every riser pair is
+     short-free);
+   - **power:** AFE `gnd`/`vdd` **and** the macro `VPWR`/`VGND` PDN straps are
+     physically tied to the `VGND`/`VDPWR` met4 stripes (top-margin met3 bridges).
+     (`ui_in`/`uio_in` are sim-only `vin` proxies and are correctly unused in
+     silicon — the SAR uses the real comparator `cmp_out`.)
+6. ✓ **Full-tile signoff:** DRC is **clean** — KLayout `mr` FEOL+BEOL = 0 items,
+   Magic DRC = 0. Hierarchical full-tile connectivity LVS (`make top-verify`)
+   confirms every intended net: analog I/O, the shared `sample`/`cmp_out`/12-bit
+   DAC bus, all digital I/O to the boundary, and — critically — `sar_digital`'s
+   `VPWR`→`VDPWR` / `VGND`→`VGND` (the macro is now **powered**; the previously
+   floating `VPWR` net is gone). `info.yaml` `tiles` is `2x2`.
 
 Lab stimulus: AWG / Analog Discovery into `ua[0]` (0…Vref) — [USER_MANUAL.md](USER_MANUAL.md) §3.4.
 

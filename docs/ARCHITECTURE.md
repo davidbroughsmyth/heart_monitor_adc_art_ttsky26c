@@ -196,10 +196,16 @@ flowchart TB
   folding the DAC (`afe_analog_folded`) gives 253 × 78 µm; tightening the track
   pitch to 0.5 µm and closing the row gap (`afe_analog_dense`) gives **253 × 44 µm**
   — all three LVS-clean vs `sar_afe.spice`. The dense cell is the one placed on-die.
-- **Verified:** signoff DRC = benign `met1.6` only; hierarchical extraction
-  (`make top-verify`) confirms each AFE pin merges with the correct macro/`ua` pin.
-- **Remaining:** digital boundary I/O (`clk`/`rst_n`/`uo_out`/`uio_*`) and macro
-  `VPWR`/`VGND` are left to the TT tile power grid; full-tile LVS is future work.
+- **Digital I/O + power:** a second channel **above** the macro routes all 26
+  digital boundary nets (`clk`, `rst_n`, `uo_out[7:0]`, `uio_out[7:0]`,
+  `uio_oe[7:0]`) from the macro's north pins to the tile's north boundary pins
+  (`ui_in`/`uio_in` are sim-only proxies, unused in silicon). Both the AFE supplies
+  and the `sar_digital` PDN straps (`VPWR`/`VGND`) are physically bridged to the
+  `VDPWR`/`VGND` met4 stripes.
+- **Verified:** full-tile DRC is **clean** (KLayout `mr` FEOL+BEOL = 0, Magic
+  DRC = 0); hierarchical full-tile connectivity LVS (`make top-verify`) confirms
+  every net — analog I/O, the shared DAC/sample/cmp bus, all digital I/O to the
+  boundary, and `sar_digital` `VPWR`→`VDPWR` (macro powered; no floating supply).
 
 Rebuild: `cd mag && make update_gds`. See [`mag/README.md`](../mag/README.md)
 (analog custom_gds — not digital `tt_tool` local-harden).

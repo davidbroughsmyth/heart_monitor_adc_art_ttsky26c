@@ -28,3 +28,6 @@ mag/m.tcl
 mag/res_probe.tcl
 mag/drc_list.tcl
 mag/drc_why.tcl
+# local signoff scratch
+drc_top.lyrdb
+mag/top_hier.spice
