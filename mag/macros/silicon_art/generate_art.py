@@ -63,34 +63,47 @@ def merge_add(cell: gdstk.Cell, polys: list) -> None:
 
 
 def cat_face(ox: float, oy: float, s: float) -> list:
-    """s = overall side length. Solid face, ears, eyes (cut later via not), nose, mouth.
-    Eyes are drawn as absences using boolean: face OR ears, then NOT eye holes.
-    """
-    # Outer head
-    head = R(ox + 0.15 * s, oy + 0.05 * s, ox + 0.85 * s, oy + 0.75 * s)
-    # Ears (triangular approx as stacked rects, edge-connected)
-    ear_l = [
-        R(ox + 0.12 * s, oy + 0.70 * s, ox + 0.32 * s, oy + 0.88 * s),
-        R(ox + 0.16 * s, oy + 0.88 * s, ox + 0.28 * s, oy + 0.98 * s),
+    """Cat head: pointed ears, tapered chin (not square), whiskers, eye holes."""
+    # Stepped silhouette — wide cheeks, chin tapering to a soft point
+    silhouette = [
+        R(ox + 0.18 * s, oy + 0.58 * s, ox + 0.82 * s, oy + 0.78 * s),  # brow
+        R(ox + 0.12 * s, oy + 0.38 * s, ox + 0.88 * s, oy + 0.62 * s),  # cheeks
+        R(ox + 0.18 * s, oy + 0.26 * s, ox + 0.82 * s, oy + 0.40 * s),  # muzzle
+        R(ox + 0.26 * s, oy + 0.14 * s, ox + 0.74 * s, oy + 0.28 * s),  # chin
+        R(ox + 0.34 * s, oy + 0.06 * s, ox + 0.66 * s, oy + 0.16 * s),  # lower chin
+        R(ox + 0.42 * s, oy + 0.00 * s, ox + 0.58 * s, oy + 0.08 * s),  # chin tip
     ]
-    ear_r = [
-        R(ox + 0.68 * s, oy + 0.70 * s, ox + 0.88 * s, oy + 0.88 * s),
-        R(ox + 0.72 * s, oy + 0.88 * s, ox + 0.84 * s, oy + 0.98 * s),
+    # Ears (edge-connected steps)
+    ears = [
+        R(ox + 0.14 * s, oy + 0.72 * s, ox + 0.34 * s, oy + 0.88 * s),
+        R(ox + 0.18 * s, oy + 0.88 * s, ox + 0.30 * s, oy + 0.98 * s),
+        R(ox + 0.66 * s, oy + 0.72 * s, ox + 0.86 * s, oy + 0.88 * s),
+        R(ox + 0.70 * s, oy + 0.88 * s, ox + 0.82 * s, oy + 0.98 * s),
     ]
-    body = gdstk.boolean([head] + ear_l + ear_r, [], "or",
+    body = gdstk.boolean(silhouette + ears, [], "or",
                          layer=ART_LAYER, datatype=ART_DT)
-    # Eye holes (≥ 2 µm) punched out
+    # Eye holes
     eyes = [
-        R(ox + 0.28 * s, oy + 0.42 * s, ox + 0.40 * s, oy + 0.55 * s),
-        R(ox + 0.60 * s, oy + 0.42 * s, ox + 0.72 * s, oy + 0.55 * s),
+        R(ox + 0.28 * s, oy + 0.48 * s, ox + 0.40 * s, oy + 0.60 * s),
+        R(ox + 0.60 * s, oy + 0.48 * s, ox + 0.72 * s, oy + 0.60 * s),
     ]
     face = gdstk.boolean(body, eyes, "not", layer=ART_LAYER, datatype=ART_DT)
-    # Nose + mouth (solid bars, well clear of eyes)
-    extras = [
-        R(ox + 0.45 * s, oy + 0.30 * s, ox + 0.55 * s, oy + 0.38 * s),  # nose
-        R(ox + 0.32 * s, oy + 0.18 * s, ox + 0.68 * s, oy + 0.24 * s),  # mouth
-    ]
-    return list(gdstk.boolean(face + extras, [], "or",
+
+    # Nose
+    nose = R(ox + 0.45 * s, oy + 0.34 * s, ox + 0.55 * s, oy + 0.42 * s)
+
+    # Whiskers — 3 per side, attached to cheeks; length kept inside inter-icon gaps
+    ww = max(1.2, 0.024 * s)          # whisker thickness (≥ met4 min)
+    wlen = 0.16 * s                   # ~8 µm at s=50; neighbors leave ≥10 µm gaps
+    left_x = ox + 0.12 * s
+    right_x = ox + 0.88 * s
+    wy = [oy + 0.36 * s, oy + 0.30 * s, oy + 0.24 * s]
+    whiskers = []
+    for y in wy:
+        whiskers.append(R(left_x - wlen, y, left_x + 0.04 * s, y + ww))
+        whiskers.append(R(right_x - 0.04 * s, y, right_x + wlen, y + ww))
+
+    return list(gdstk.boolean(list(face) + [nose] + whiskers, [], "or",
                               layer=ART_LAYER, datatype=ART_DT))
 
 
@@ -168,8 +181,8 @@ def main() -> None:
         layer=BOUND_LAYER, datatype=BOUND_DT,
     ))
 
-    # 2×3 big icons (~50 µm) filling the pocket above the signature band
-    s = 50.0
+    # 2×3 icons (~48 µm) — slight shrink so cat whiskers clear neighbor hearts
+    s = 48.0
     sig_h = 22.0
     usable_h = HEIGHT - sig_h - 6.0
     gap_y = snap((usable_h - 2 * s) / 3.0)
