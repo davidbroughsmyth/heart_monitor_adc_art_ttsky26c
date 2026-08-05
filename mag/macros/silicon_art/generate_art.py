@@ -19,6 +19,11 @@ OUT = Path(__file__).resolve().parent
 ART_LAYER, ART_DT = 71, 20
 BOUND_LAYER, BOUND_DT = 235, 4
 WIDTH, HEIGHT = 185.0, 130.0
+GRID = 0.005  # sky130 manufacturing grid (µm)
+
+
+def snap(v: float) -> float:
+    return round(v / GRID) * GRID
 
 
 def write_lef(path: Path, name: str, w: float, h: float) -> None:
@@ -41,6 +46,9 @@ def write_lef(path: Path, name: str, w: float, h: float) -> None:
 
 
 def R(x0, y0, x1, y1):
+    x0, y0, x1, y1 = snap(x0), snap(y0), snap(x1), snap(y1)
+    if x1 <= x0 or y1 <= y0:
+        raise ValueError(f"degenerate rect {(x0,y0,x1,y1)}")
     return gdstk.rectangle((x0, y0), (x1, y1), layer=ART_LAYER, datatype=ART_DT)
 
 
@@ -48,7 +56,10 @@ def merge_add(cell: gdstk.Cell, polys: list) -> None:
     if not polys:
         return
     for p in gdstk.boolean(polys, [], "or", layer=ART_LAYER, datatype=ART_DT):
-        cell.add(p)
+        # Snap every vertex onto the manufacturing grid (boolean can introduce
+        # off-grid points from fractional icon math).
+        pts = [(snap(x), snap(y)) for x, y in p.points]
+        cell.add(gdstk.Polygon(pts, layer=ART_LAYER, datatype=ART_DT))
 
 
 def cat_face(ox: float, oy: float, s: float) -> list:
@@ -161,25 +172,24 @@ def main() -> None:
     s = 50.0
     sig_h = 22.0
     usable_h = HEIGHT - sig_h - 6.0
-    gap_y = (usable_h - 2 * s) / 3.0
-    gap_x = (WIDTH - 3 * s) / 4.0
-    top_y = HEIGHT - 4.0 - s
-    mid_y = 4.0 + sig_h + gap_y
+    gap_y = snap((usable_h - 2 * s) / 3.0)
+    gap_x = snap((WIDTH - 3 * s) / 4.0)
+    top_y = snap(HEIGHT - 4.0 - s)
+    mid_y = snap(4.0 + sig_h + gap_y)
 
     icons = [
         (0, 0, cat_face), (1, 0, heart), (2, 0, cat_face),
         (0, 1, heart), (1, 1, cat_face), (2, 1, heart),
     ]
     for col, row, fn in icons:
-        ox = gap_x + col * (s + gap_x)
+        ox = snap(gap_x + col * (s + gap_x))
         oy = top_y if row == 0 else mid_y
         merge_add(cell, fn(ox, oy, s))
 
     # DBS signature centered on the bottom band
     lh = 16.0
-    # total width of DBS with gaps: 3*0.72*lh + 2*0.35*lh = 2.86*lh
-    total_sig = 2.86 * lh
-    sx = (WIDTH - total_sig) / 2.0
+    total_sig = snap(2.86 * lh)
+    sx = snap((WIDTH - total_sig) / 2.0)
     sy = 5.0
     merge_add(cell, letter_dbs(sx, sy, lh))
 
