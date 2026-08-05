@@ -1,0 +1,15 @@
+# LEF generated for silicon_art
+VERSION 5.8 ;
+NAMESCASESENSITIVE ON ;
+DIVIDERCHAR "/" ;
+BUSBITCHARS "[]" ;
+UNITS
+   DATABASE MICRONS 1000 ;
+END UNITS
+
+MACRO silicon_art
+   CLASS BLOCK ;
+   FOREIGN silicon_art 0 0 ;
+   SIZE 185.000 BY 130.000 ;
+   SYMMETRY X Y ;
+END silicon_art

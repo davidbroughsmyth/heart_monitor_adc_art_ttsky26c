@@ -205,6 +205,17 @@ set NETS {clk rst_n uo_out0 uo_out1 uo_out2 uo_out7 uio_out0 uo_out6 uio_out1 uo
 set i 0
 foreach n $NETS { dig $n [expr {203.7 + 0.82*$i}] ; incr i }
 
+# ---- decorative silicon art (non-functional met4) in the free pocket right of
+#      the macro: cats + hearts + "DBS" signature. 185x130 µm at (140, 68) —
+#      clears macro (x<=130), top dig channel (y>=205), and AFE band (y<=60).
+#      Floating metal only; no ports / no power. ----
+set ART_X 140.0
+set ART_Y 68.0
+gds read macros/silicon_art/silicon_art.gds
+box ${ART_X}um ${ART_Y}um [expr {$ART_X+1}]um [expr {$ART_Y+1}]um
+getcell silicon_art
+puts "ART_PLACED at ($ART_X,$ART_Y)"
+
 # ---- save + export ----
 select top cell
 save $TOP

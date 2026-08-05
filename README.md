@@ -4,6 +4,8 @@
 
 Fork of [`heart_monitor_adc_ttsky26c`](https://github.com/davidbroughsmyth/heart_monitor_adc_ttsky26c) kept for silicon-art experiments; functional ADC stays in the pristine repo.
 
+Decorative **met4 silicon art** (cat faces, hearts, `DBS` signature) fills the free pocket right of the digital macro — see [`mag/macros/silicon_art/`](mag/macros/silicon_art/).
+
 12-bit ~500 SPS **SAR ADC** companion for the SNN heart monitor
 ([snn_lif_neurons_ttsky26c](https://github.com/davidbroughsmyth/snn_lif_neurons_ttsky26c)).
 
