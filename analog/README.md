@@ -11,6 +11,7 @@ Schematic-level models of the silicon path:
 |---|---|
 | Ideal SPICE polarity bench | PASS (`./run_tb.sh`) |
 | sky130 PDK SPICE (TG S/H + **R-2R** DAC + OTA CMP) | PASS (`./run_tb_sky130.sh`, needs volare PDK) |
+| **Mixed-signal SAR (B1 lockstep, real AFE)** | PASS — monotonic 12-bit transfer through the real sky130 AFE (`./run_sar_lockstep.sh`) |
 | Real-device Magic cells (`sky130_fd_pr` gencells) | **LVS-clean** — see table below |
 | `afe_analog` (connected S/H + comparator + 12-bit R-2R DAC), single row | **netgen LVS vs `sar_afe.spice`: Circuits match uniquely** (~400×66 µm) |
 | `afe_analog_folded` (same AFE, DAC folded into 2 rows) | **LVS vs `sar_afe.spice`: Circuits match uniquely** — **253×78 µm** |
@@ -53,15 +54,32 @@ benign-`met1.6`-only and connectivity is extraction-verified (`make top-verify`)
 | `tb_afe.spice` + `run_tb.sh` | Ideal polarity checks |
 | `sky130/` | PDK netlist + `tb_afe_sky130.spice` |
 | `run_tb_sky130.sh` | PDK bench (`PDK_ROOT` override supported) |
+| `sky130/tb_sar_lockstep.py` + `run_sar_lockstep.sh` | Mixed-signal SAR (B1 lockstep, real AFE) |
 
 ## Run
 
 ```sh
 ./run_tb.sh              # ideal — no PDK required
 ./run_tb_sky130.sh       # sky130 — needs volare sky130A
+./run_sar_lockstep.sh    # mixed-signal SAR lockstep (sky130, needs volare)
+./run_sar_lockstep.sh 2800 1024 -v   # specific codes + bit-trace
 ```
 
 Default `PDK_ROOT` matches `mag/Makefile` volare hash.
+
+### Mixed-signal SAR (Option B1 — Python lockstep around the real AFE)
+
+`tb_sar_lockstep.py` runs the 12-bit SAR binary search from `src/sar_fsm.v` in
+Python, but **every comparator decision comes from a real ngspice transient of
+the sky130 AFE** (`sar_afe.spice`): for each trial code it samples the DC input
+on the S/H, lets the DAC settle, and reads the analog `v(cmp_out)`. The whole
+sweep runs in one ngspice process (model setup paid once, then ~0.3 s/`tran`).
+
+It reports the measured transfer plus endpoint gain/offset/INL and gates on
+**monotonicity** (proof the SAR closes correctly through the real front-end).
+The raw error is large and dominated by the un-trimmed comparator input-referred
+offset (~+230 mV) and R-2R INL — this characterizes the best-effort AFE; it is
+not a harness issue. (Comparator offset trim / DAC ratio tuning is future work.)
 
 ## Layout
 

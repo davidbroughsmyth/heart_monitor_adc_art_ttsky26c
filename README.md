@@ -41,6 +41,7 @@ make -B
 ```sh
 cd analog && ./run_tb.sh           # ideal
 cd analog && ./run_tb_sky130.sh    # sky130 PDK (needs volare)
+cd analog && ./run_sar_lockstep.sh # mixed-signal SAR lockstep, real AFE (sky130)
 ```
 
 ## GDS / layout
