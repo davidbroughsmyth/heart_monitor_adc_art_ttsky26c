@@ -1,6 +1,8 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg)
 
-# heart_monitor_adc (Tiny Tapeout)
+# heart_monitor_adc_art (Tiny Tapeout)
+
+Fork of [`heart_monitor_adc_ttsky26c`](https://github.com/davidbroughsmyth/heart_monitor_adc_ttsky26c) kept for silicon-art experiments; functional ADC stays in the pristine repo.
 
 12-bit ~500 SPS **SAR ADC** companion for the SNN heart monitor
 ([snn_lif_neurons_ttsky26c](https://github.com/davidbroughsmyth/snn_lif_neurons_ttsky26c)).
