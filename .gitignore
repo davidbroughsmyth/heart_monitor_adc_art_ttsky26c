@@ -12,6 +12,9 @@ test/__pycache__/
 test/.venv/
 test/results.xml
 test/gate_level_netlist.v
+test/mixed_signal/sim_build/
+test/mixed_signal/__pycache__/
+test/mixed_signal/results.xml
 mag/openlane/**/runs/
 mag/*.ext
 mag/*.spice

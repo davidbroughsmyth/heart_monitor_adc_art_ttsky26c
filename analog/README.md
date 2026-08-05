@@ -12,6 +12,7 @@ Schematic-level models of the silicon path:
 | Ideal SPICE polarity bench | PASS (`./run_tb.sh`) |
 | sky130 PDK SPICE (TG S/H + **R-2R** DAC + OTA CMP) | PASS (`./run_tb_sky130.sh`, needs volare PDK) |
 | **Mixed-signal SAR (B1 lockstep, real AFE)** | PASS — monotonic 12-bit transfer through the real sky130 AFE (`./run_sar_lockstep.sh`) |
+| **Fully-silicon lockstep (real gate netlist + real AFE)** | PASS — hardened `sar_digital` gates (cocotb/iverilog) + real AFE (ngspice) agree with B1 code-for-code (`test/mixed_signal/run_ms.sh`) |
 | Real-device Magic cells (`sky130_fd_pr` gencells) | **LVS-clean** — see table below |
 | `afe_analog` (connected S/H + comparator + 12-bit R-2R DAC), single row | **netgen LVS vs `sar_afe.spice`: Circuits match uniquely** (~400×66 µm) |
 | `afe_analog_folded` (same AFE, DAC folded into 2 rows) | **LVS vs `sar_afe.spice`: Circuits match uniquely** — **253×78 µm** |
@@ -80,6 +81,14 @@ It reports the measured transfer plus endpoint gain/offset/INL and gates on
 The raw error is large and dominated by the un-trimmed comparator input-referred
 offset (~+230 mV) and R-2R INL — this characterizes the best-effort AFE; it is
 not a harness issue. (Comparator offset trim / DAC ratio tuning is future work.)
+
+### Fully-silicon lockstep (real gate netlist + real AFE)
+
+`test/mixed_signal/` takes B1 one step further: instead of the Python FSM, the
+**hardened gate-level netlist** of `sar_digital` (`sky130_fd_sc_hd` cells) runs in
+cocotb/iverilog and its `dac_bits`/`cmp_out` interface is wired to the same real
+AFE in ngspice. Both halves are real silicon; results match B1 code-for-code.
+See [`test/mixed_signal/README.md`](../test/mixed_signal/README.md).
 
 ## Layout
 
