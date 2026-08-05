@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """Generate decorative SKY130 silicon art (met4) for the free pocket right of sar_digital.
 
-Icons: cat faces + hearts filling the pocket; signature "DBS" along the bottom.
+Large cat faces + hearts fill the pocket; "DBS" signature along the bottom.
 
-Output:
-  mag/macros/silicon_art/silicon_art.gds
-  mag/macros/silicon_art/silicon_art.lef
-  mag/macros/silicon_art/silicon_art.svg   (preview only)
+Drawn as solid axis-aligned met4 rectangles (no pixel gaps / no diagonal kisses)
+so Magic met4.2 (≥ 0.3 µm spacing) and width rules stay clean. Rects in each
+icon/letter are boolean-OR'd into continuous polygons.
 
-Fits ~185 x 130 µm; placed by mag/build_top_2x2.tcl at (140, 68).
+Output: mag/macros/silicon_art/silicon_art.{gds,lef,svg}
 """
 from __future__ import annotations
 from pathlib import Path
@@ -17,13 +16,9 @@ import gdstk
 CELL = "silicon_art"
 OUT = Path(__file__).resolve().parent
 
-# SKY130 — Tiny Tapeout silicon-art guide
-ART_LAYER, ART_DT = 71, 20          # met4.drawing
-BOUND_LAYER, BOUND_DT = 235, 4      # prBoundary
-
-# Pocket-friendly macro size (leave margins to macro edge / dig channel / tile edge)
+ART_LAYER, ART_DT = 71, 20
+BOUND_LAYER, BOUND_DT = 235, 4
 WIDTH, HEIGHT = 185.0, 130.0
-PX = 1.6                            # pixel pitch (>> met4 min width/spacing)
 
 
 def write_lef(path: Path, name: str, w: float, h: float) -> None:
@@ -45,139 +40,154 @@ def write_lef(path: Path, name: str, w: float, h: float) -> None:
     )
 
 
-def add_px(cell: gdstk.Cell, ox: float, oy: float, grid: list[str],
-           scale: float = PX) -> None:
-    """Paint '#' pixels from a bitmap (row 0 = top). Origin = lower-left of glyph."""
-    rows = len(grid)
-    cols = max(len(r) for r in grid)
-    for r, line in enumerate(grid):
-        y1 = oy + (rows - 1 - r) * scale
-        for c, ch in enumerate(line):
-            if ch == "#":
-                x1 = ox + c * scale
-                cell.add(gdstk.rectangle(
-                    (x1, y1), (x1 + scale * 0.92, y1 + scale * 0.92),
-                    layer=ART_LAYER, datatype=ART_DT,
-                ))
+def R(x0, y0, x1, y1):
+    return gdstk.rectangle((x0, y0), (x1, y1), layer=ART_LAYER, datatype=ART_DT)
 
 
-# --- icon bitmaps (compact; painted at PX or 2*PX) ---------------------------------
-CAT = [
-    "#..#...#..#",
-    ".#.#...#.#.",
-    "..#######..",
-    ".#.......#.",
-    "#..#...#..#",
-    "#.........#",
-    "#..#####..#",
-    ".#.......#.",
-    "..#######..",
-]
+def merge_add(cell: gdstk.Cell, polys: list) -> None:
+    if not polys:
+        return
+    for p in gdstk.boolean(polys, [], "or", layer=ART_LAYER, datatype=ART_DT):
+        cell.add(p)
 
-HEART = [
-    ".###...###.",
-    "#####.#####",
-    "###########",
-    ".#########.",
-    "..#######..",
-    "...#####...",
-    "....###....",
-    ".....#.....",
-]
 
-# 5x7 capitals for DBS
-GLYPHS = {
-    "D": [
-        "####.",
-        "#...#",
-        "#...#",
-        "#...#",
-        "#...#",
-        "#...#",
-        "####.",
-    ],
-    "B": [
-        "####.",
-        "#...#",
-        "#...#",
-        "####.",
-        "#...#",
-        "#...#",
-        "####.",
-    ],
-    "S": [
-        ".####",
-        "#....",
-        "#....",
-        ".###.",
-        "....#",
-        "....#",
-        "####.",
-    ],
-}
+def cat_face(ox: float, oy: float, s: float) -> list:
+    """s = overall side length. Solid face, ears, eyes (cut later via not), nose, mouth.
+    Eyes are drawn as absences using boolean: face OR ears, then NOT eye holes.
+    """
+    # Outer head
+    head = R(ox + 0.15 * s, oy + 0.05 * s, ox + 0.85 * s, oy + 0.75 * s)
+    # Ears (triangular approx as stacked rects, edge-connected)
+    ear_l = [
+        R(ox + 0.12 * s, oy + 0.70 * s, ox + 0.32 * s, oy + 0.88 * s),
+        R(ox + 0.16 * s, oy + 0.88 * s, ox + 0.28 * s, oy + 0.98 * s),
+    ]
+    ear_r = [
+        R(ox + 0.68 * s, oy + 0.70 * s, ox + 0.88 * s, oy + 0.88 * s),
+        R(ox + 0.72 * s, oy + 0.88 * s, ox + 0.84 * s, oy + 0.98 * s),
+    ]
+    body = gdstk.boolean([head] + ear_l + ear_r, [], "or",
+                         layer=ART_LAYER, datatype=ART_DT)
+    # Eye holes (≥ 2 µm) punched out
+    eyes = [
+        R(ox + 0.28 * s, oy + 0.42 * s, ox + 0.40 * s, oy + 0.55 * s),
+        R(ox + 0.60 * s, oy + 0.42 * s, ox + 0.72 * s, oy + 0.55 * s),
+    ]
+    face = gdstk.boolean(body, eyes, "not", layer=ART_LAYER, datatype=ART_DT)
+    # Nose + mouth (solid bars, well clear of eyes)
+    extras = [
+        R(ox + 0.45 * s, oy + 0.30 * s, ox + 0.55 * s, oy + 0.38 * s),  # nose
+        R(ox + 0.32 * s, oy + 0.18 * s, ox + 0.68 * s, oy + 0.24 * s),  # mouth
+    ]
+    return list(gdstk.boolean(face + extras, [], "or",
+                              layer=ART_LAYER, datatype=ART_DT))
+
+
+def heart(ox: float, oy: float, s: float) -> list:
+    """Classic heart from overlapping solid lobes + point."""
+    lobes = [
+        R(ox + 0.05 * s, oy + 0.45 * s, ox + 0.50 * s, oy + 0.85 * s),
+        R(ox + 0.50 * s, oy + 0.45 * s, ox + 0.95 * s, oy + 0.85 * s),
+        # round the tops a bit with inset steps (edge connected)
+        R(ox + 0.12 * s, oy + 0.85 * s, ox + 0.43 * s, oy + 0.95 * s),
+        R(ox + 0.57 * s, oy + 0.85 * s, ox + 0.88 * s, oy + 0.95 * s),
+    ]
+    # Body tapering to a point (stacked horizontals)
+    body = [
+        R(ox + 0.08 * s, oy + 0.30 * s, ox + 0.92 * s, oy + 0.50 * s),
+        R(ox + 0.18 * s, oy + 0.18 * s, ox + 0.82 * s, oy + 0.32 * s),
+        R(ox + 0.30 * s, oy + 0.08 * s, ox + 0.70 * s, oy + 0.20 * s),
+        R(ox + 0.40 * s, oy + 0.00 * s, ox + 0.60 * s, oy + 0.10 * s),
+    ]
+    return list(gdstk.boolean(lobes + body, [], "or",
+                              layer=ART_LAYER, datatype=ART_DT))
+
+
+def letter_dbs(ox: float, oy: float, h: float) -> list:
+    """Block 'DBS'. Stroke w≈0.22*h; counters ≥ 2 µm."""
+    w = h * 0.72          # letter width
+    t = h * 0.22          # stroke
+    gap = h * 0.35        # between letters
+    polys = []
+
+    def D(x):
+        # stem + top/bot + right side (hollow left by gap in middle-right is OK — use
+        # thick C-ish closed D: full rectangle minus inner counter)
+        outer = R(x, oy, x + w, oy + h)
+        # counter inset on the right
+        inner = R(x + t, oy + t, x + w - t, oy + h - t)
+        return list(gdstk.boolean([outer], [inner], "not",
+                                  layer=ART_LAYER, datatype=ART_DT))
+
+    def B(x):
+        outer = R(x, oy, x + w, oy + h)
+        # two counters
+        c1 = R(x + t, oy + h * 0.55, x + w - t, oy + h - t)
+        c2 = R(x + t, oy + t, x + w - t, oy + h * 0.45)
+        return list(gdstk.boolean([outer], [c1, c2], "not",
+                                  layer=ART_LAYER, datatype=ART_DT))
+
+    def S(x):
+        # three horizontal bars + side stubs (no diagonal kissing)
+        bars = [
+            R(x, oy + h - t, x + w, oy + h),            # top
+            R(x, oy + (h - t) / 2, x + w, oy + (h + t) / 2),  # mid
+            R(x, oy, x + w, oy + t),                    # bot
+            R(x, oy + (h - t) / 2, x + t, oy + h),      # upper-left
+            R(x + w - t, oy, x + w, oy + (h + t) / 2),  # lower-right
+        ]
+        return list(gdstk.boolean(bars, [], "or",
+                                  layer=ART_LAYER, datatype=ART_DT))
+
+    polys += D(ox)
+    polys += B(ox + w + gap)
+    polys += S(ox + 2 * (w + gap))
+    # underline
+    total = 3 * w + 2 * gap
+    polys.append(R(ox, oy - h * 0.18, ox + total, oy - h * 0.06))
+    return list(gdstk.boolean(polys, [], "or", layer=ART_LAYER, datatype=ART_DT))
 
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     lib = gdstk.Library()
     cell = lib.new_cell(CELL)
-
-    # PR boundary (required)
     cell.add(gdstk.rectangle(
         (0, 0), (WIDTH, HEIGHT),
         layer=BOUND_LAYER, datatype=BOUND_DT,
     ))
 
-    # --- icon field: 2 rows x 3 cols of alternating cats / hearts ----------------
-    # Each icon ~11 * 1.6 ≈ 17.6 µm; with spacing fills width comfortably.
-    icon = 11 * PX
-    gap_x = (WIDTH - 3 * icon) / 4.0
-    gap_y = 4.0
-    top_y = HEIGHT - 6.0 - icon          # upper row
-    mid_y = top_y - icon - gap_y         # lower icon row
+    # 2×3 big icons (~50 µm) filling the pocket above the signature band
+    s = 50.0
+    sig_h = 22.0
+    usable_h = HEIGHT - sig_h - 6.0
+    gap_y = (usable_h - 2 * s) / 3.0
+    gap_x = (WIDTH - 3 * s) / 4.0
+    top_y = HEIGHT - 4.0 - s
+    mid_y = 4.0 + sig_h + gap_y
+
     icons = [
-        (0, 0, CAT), (1, 0, HEART), (2, 0, CAT),
-        (0, 1, HEART), (1, 1, CAT), (2, 1, HEART),
+        (0, 0, cat_face), (1, 0, heart), (2, 0, cat_face),
+        (0, 1, heart), (1, 1, cat_face), (2, 1, heart),
     ]
-    for col, row, bmp in icons:
-        ox = gap_x + col * (icon + gap_x)
+    for col, row, fn in icons:
+        ox = gap_x + col * (s + gap_x)
         oy = top_y if row == 0 else mid_y
-        add_px(cell, ox, oy, bmp, PX)
+        merge_add(cell, fn(ox, oy, s))
 
-    # Decorative small hearts between rows as filler accents
-    mini = [
-        ".#.#.",
-        "#####",
-        ".###.",
-        "..#..",
-    ]
-    for i, ox in enumerate([gap_x + icon * 0.55,
-                            gap_x + icon + gap_x + icon * 0.55,
-                            gap_x + 2 * (icon + gap_x) + icon * 0.15]):
-        add_px(cell, ox, mid_y + icon + 0.6, mini, PX * 0.7)
-
-    # --- signature "DBS" along the bottom ---------------------------------------
-    gpx = 2.0                                   # larger pixels for the name
-    gw, gh = 5 * gpx, 7 * gpx
-    letter_gap = 3.0
-    total_w = 3 * gw + 2 * letter_gap
-    sx = (WIDTH - total_w) / 2.0
-    sy = 4.0
-    for i, ch in enumerate("DBS"):
-        add_px(cell, sx + i * (gw + letter_gap), sy, GLYPHS[ch], gpx)
-
-    # Thin underline under the signature
-    cell.add(gdstk.rectangle(
-        (sx, sy - 2.2), (sx + total_w, sy - 0.6),
-        layer=ART_LAYER, datatype=ART_DT,
-    ))
+    # DBS signature centered on the bottom band
+    lh = 16.0
+    # total width of DBS with gaps: 3*0.72*lh + 2*0.35*lh = 2.86*lh
+    total_sig = 2.86 * lh
+    sx = (WIDTH - total_sig) / 2.0
+    sy = 5.0
+    merge_add(cell, letter_dbs(sx, sy, lh))
 
     lib.write_gds(OUT / f"{CELL}.gds")
     write_lef(OUT / f"{CELL}.lef", CELL, WIDTH, HEIGHT)
     cell.write_svg(str(OUT / f"{CELL}.svg"))
-    print(f"wrote {OUT}/{CELL}.gds  ({WIDTH} x {HEIGHT} µm)")
-    print(f"wrote {OUT}/{CELL}.lef")
-    print(f"wrote {OUT}/{CELL}.svg  (preview)")
+    n = sum(1 for p in cell.polygons if p.layer == ART_LAYER)
+    print(f"wrote {OUT}/{CELL}.gds  ({WIDTH}x{HEIGHT} µm, {n} met4 polys)")
 
 
 if __name__ == "__main__":
