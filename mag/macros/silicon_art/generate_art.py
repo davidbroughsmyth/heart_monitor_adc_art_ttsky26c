@@ -63,7 +63,7 @@ def merge_add(cell: gdstk.Cell, polys: list) -> None:
 
 
 def cat_face(ox: float, oy: float, s: float) -> list:
-    """Cat head: pointed ears, tapered chin (not square), whiskers, eye holes."""
+    """Cat head: tapered chin, whiskers; eyes/nose/mouth as holes (show in met4)."""
     # Stepped silhouette — wide cheeks, chin tapering to a soft point
     silhouette = [
         R(ox + 0.18 * s, oy + 0.58 * s, ox + 0.82 * s, oy + 0.78 * s),  # brow
@@ -73,7 +73,6 @@ def cat_face(ox: float, oy: float, s: float) -> list:
         R(ox + 0.34 * s, oy + 0.06 * s, ox + 0.66 * s, oy + 0.16 * s),  # lower chin
         R(ox + 0.42 * s, oy + 0.00 * s, ox + 0.58 * s, oy + 0.08 * s),  # chin tip
     ]
-    # Ears (edge-connected steps)
     ears = [
         R(ox + 0.14 * s, oy + 0.72 * s, ox + 0.34 * s, oy + 0.88 * s),
         R(ox + 0.18 * s, oy + 0.88 * s, ox + 0.30 * s, oy + 0.98 * s),
@@ -82,19 +81,43 @@ def cat_face(ox: float, oy: float, s: float) -> list:
     ]
     body = gdstk.boolean(silhouette + ears, [], "or",
                          layer=ART_LAYER, datatype=ART_DT)
+
+    cx = ox + 0.50 * s
+
     # Eye holes
     eyes = [
-        R(ox + 0.28 * s, oy + 0.48 * s, ox + 0.40 * s, oy + 0.60 * s),
-        R(ox + 0.60 * s, oy + 0.48 * s, ox + 0.72 * s, oy + 0.60 * s),
+        R(ox + 0.28 * s, oy + 0.50 * s, ox + 0.40 * s, oy + 0.62 * s),
+        R(ox + 0.60 * s, oy + 0.50 * s, ox + 0.72 * s, oy + 0.62 * s),
     ]
-    face = gdstk.boolean(body, eyes, "not", layer=ART_LAYER, datatype=ART_DT)
 
-    # Nose
-    nose = R(ox + 0.45 * s, oy + 0.34 * s, ox + 0.55 * s, oy + 0.42 * s)
+    # Upside-down triangle nose (hole): wide at top, point down
+    nose = [
+        R(cx - 0.08 * s, oy + 0.38 * s, cx + 0.08 * s, oy + 0.46 * s),
+        R(cx - 0.055 * s, oy + 0.33 * s, cx + 0.055 * s, oy + 0.39 * s),
+        R(cx - 0.030 * s, oy + 0.28 * s, cx + 0.030 * s, oy + 0.34 * s),
+        R(cx - 0.012 * s, oy + 0.24 * s, cx + 0.012 * s, oy + 0.29 * s),
+    ]
 
-    # Whiskers — 3 per side, attached to cheeks; length kept inside inter-icon gaps
-    ww = max(1.2, 0.024 * s)          # whisker thickness (≥ met4 min)
-    wlen = 0.16 * s                   # ~8 µm at s=50; neighbors leave ≥10 µm gaps
+    # Two mouth arcs (∪ ∪) as holes under the nose — classic cat smile
+    t = max(1.4, 0.028 * s)   # cut stroke (≥ met4-visible / spacing-safe)
+    mouth = [
+        # left arc
+        R(cx - 0.18 * s, oy + 0.16 * s, cx - 0.18 * s + t, oy + 0.26 * s),
+        R(cx - 0.18 * s, oy + 0.14 * s, cx - 0.04 * s, oy + 0.14 * s + t),
+        R(cx - 0.04 * s - t, oy + 0.14 * s, cx - 0.04 * s, oy + 0.20 * s),
+        # right arc
+        R(cx + 0.18 * s - t, oy + 0.16 * s, cx + 0.18 * s, oy + 0.26 * s),
+        R(cx + 0.04 * s, oy + 0.14 * s, cx + 0.18 * s, oy + 0.14 * s + t),
+        R(cx + 0.04 * s, oy + 0.14 * s, cx + 0.04 * s + t, oy + 0.20 * s),
+    ]
+
+    holes = gdstk.boolean(eyes + nose + mouth, [], "or",
+                          layer=ART_LAYER, datatype=ART_DT)
+    face = gdstk.boolean(body, holes, "not", layer=ART_LAYER, datatype=ART_DT)
+
+    # Whiskers — 3 per side, solid bars attached to cheeks
+    ww = max(1.2, 0.024 * s)
+    wlen = 0.16 * s
     left_x = ox + 0.12 * s
     right_x = ox + 0.88 * s
     wy = [oy + 0.36 * s, oy + 0.30 * s, oy + 0.24 * s]
@@ -103,7 +126,7 @@ def cat_face(ox: float, oy: float, s: float) -> list:
         whiskers.append(R(left_x - wlen, y, left_x + 0.04 * s, y + ww))
         whiskers.append(R(right_x - 0.04 * s, y, right_x + wlen, y + ww))
 
-    return list(gdstk.boolean(list(face) + [nose] + whiskers, [], "or",
+    return list(gdstk.boolean(list(face) + whiskers, [], "or",
                               layer=ART_LAYER, datatype=ART_DT))
 
 
