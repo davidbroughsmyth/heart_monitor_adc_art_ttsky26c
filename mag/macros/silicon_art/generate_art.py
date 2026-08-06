@@ -90,12 +90,12 @@ def cat_face(ox: float, oy: float, s: float) -> list:
         R(ox + 0.60 * s, oy + 0.50 * s, ox + 0.72 * s, oy + 0.62 * s),
     ]
 
-    # Upside-down triangle nose (hole): wide at top, point down
+    # Upside-down triangle nose (hole): smaller/cute, wide top → point down
     nose = [
-        R(cx - 0.08 * s, oy + 0.38 * s, cx + 0.08 * s, oy + 0.46 * s),
-        R(cx - 0.055 * s, oy + 0.33 * s, cx + 0.055 * s, oy + 0.39 * s),
-        R(cx - 0.030 * s, oy + 0.28 * s, cx + 0.030 * s, oy + 0.34 * s),
-        R(cx - 0.012 * s, oy + 0.24 * s, cx + 0.012 * s, oy + 0.29 * s),
+        R(cx - 0.050 * s, oy + 0.39 * s, cx + 0.050 * s, oy + 0.45 * s),
+        R(cx - 0.032 * s, oy + 0.35 * s, cx + 0.032 * s, oy + 0.40 * s),
+        R(cx - 0.016 * s, oy + 0.31 * s, cx + 0.016 * s, oy + 0.36 * s),
+        R(cx - 0.007 * s, oy + 0.28 * s, cx + 0.007 * s, oy + 0.32 * s),
     ]
 
     # Two mouth arcs (∪ ∪) as holes under the nose — classic cat smile
