@@ -40,11 +40,15 @@ proc m3v {x y0 y1} { set lo [expr {min($y0,$y1)}]; set hi [expr {max($y0,$y1)}]
   afe::pbox met3 [expr {$x-0.16}] $lo [expr {$x+0.16}] $hi }
 proc m4v {x y0 y1} { set lo [expr {min($y0,$y1)}]; set hi [expr {max($y0,$y1)}]
   afe::pbox met4 [expr {$x-0.15}] $lo [expr {$x+0.15}] $hi }
-# via2 landing on an AFE met2 track (0.46um pitch): met2 pad WIDE in x / NARROW
-# in y (0.28) so it never approaches the adjacent track; met3 pad full 0.52.
+# via2 landing on an AFE met2 track (~0.46um pitch): met2 pad WIDE in x /
+# NARROW in y so it keeps met2.spacing to the adjacent track; met3 pad full
+# 0.52. Magic cifoutput uses squares-grid for VIA2 — a painted via exactly
+# 0.2×0.2 emits ZERO GDS cuts (same bug as afe::via2). Paint via over the
+# metal overlap so >=1 cut is generated. Half-height 0.22 keeps spacing:
+# gap_to_adj = 0.46 - 0.22 - 0.08 = 0.16 >= met2.spacing 0.14.
 proc tapvia2 {x y} {
-  afe::pbox met2 [expr {$x-0.30}] [expr {$y-0.14}] [expr {$x+0.30}] [expr {$y+0.14}]
-  afe::pbox via2 [expr {$x-0.10}] [expr {$y-0.10}] [expr {$x+0.10}] [expr {$y+0.10}]
+  afe::pbox met2 [expr {$x-0.30}] [expr {$y-0.22}] [expr {$x+0.30}] [expr {$y+0.22}]
+  afe::pbox via2 [expr {$x-0.26}] [expr {$y-0.22}] [expr {$x+0.26}] [expr {$y+0.22}]
   afe::pbox met3 [expr {$x-0.26}] [expr {$y-0.26}] [expr {$x+0.26}] [expr {$y+0.26}]
 }
 
