@@ -132,16 +132,21 @@ proc afe::via {x y} {
     afe::pbox met2 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
 }
 # via2 met2<->met3 ; via3 met3<->met4 (bigger cut 0.2, enclosure 0.185)
+# IMPORTANT: Magic cifoutput uses `squares-grid` for VIA2/VIA3 — it only emits
+# 0.2µm cut squares *inside* the painted via region where both metals exist.
+# Painting a single 0.2×0.2 via marker is too small / off-grid and streams
+# ZERO cuts (metals look stacked with no via in GDS/KLayout). Paint via over
+# the full metal pad so >=1 cut is generated.
 proc afe::via2 {x y} {
     set a 0.26 ;# met3 min area 0.24um^2 -> 0.52x0.52
     afe::pbox met2 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
-    afe::pbox via2 [expr {$x-0.10}] [expr {$y-0.10}] [expr {$x+0.10}] [expr {$y+0.10}]
+    afe::pbox via2 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
     afe::pbox met3 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
 }
 proc afe::via3 {x y} {
     set a 0.26
     afe::pbox met3 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
-    afe::pbox via3 [expr {$x-0.10}] [expr {$y-0.10}] [expr {$x+0.10}] [expr {$y+0.10}]
+    afe::pbox via3 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
     afe::pbox met4 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
 }
 proc afe::m4h {y x0 x1} {
