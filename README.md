@@ -68,8 +68,12 @@ See [mag/README.md](mag/README.md). Digital macro: `mag/macros/sar_digital/`.
 **Status:** digital SAR is OpenLane-hardened (met4-max) and placed **hierarchically** in a **2×2**
 tile (do not flatten Mag). The **real-device dense AFE** (`mag/afe_analog_dense`, 253×44 µm,
 LVS-clean vs `analog/sky130/sar_afe.spice`) is placed and routed to the `sar_digital` macro by
-`mag/build_top_2x2.tcl` — DRC-clean (benign `met1.6` only), with extraction-verified AFE↔macro
-connectivity. See [analog/README.md](analog/README.md) and [mag/README.md](mag/README.md).
+`mag/build_top_2x2.tcl` — DRC-clean / TT precheck green, with extraction-verified AFE↔macro
+and full digital I/O + macro PDN connectivity. Decorative **`silicon_art`** (185×130 µm met4
+cats/hearts + `DBS`) fills the free pocket right of the macro at `(140, 68)` — floating metal,
+no pins, no SAR impact. Mixed-signal sims (`analog/run_sar_lockstep.sh`,
+`test/mixed_signal/`) match the pristine ADC repo. See [analog/README.md](analog/README.md)
+and [mag/README.md](mag/README.md).
 
 ## What is Tiny Tapeout?
 

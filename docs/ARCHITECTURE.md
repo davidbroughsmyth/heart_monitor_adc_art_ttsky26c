@@ -173,11 +173,13 @@ Regions inside `tt_analog_2x2` (**334.88 × 225.76 µm**), assembled by
 flowchart TB
   subgraph tile [tt_um_2x2]
     pwr[VDPWR_VGND_met4_stripes_left]
-    digR[sar_digital_90x140_top_south_pins]
+    digR[sar_digital_90x140]
+    artR[silicon_art_185x130_east]
     chan[met3_met4_signal_channel]
     afeR[afe_analog_dense_253x44_bottom]
   end
   pwr --- digR
+  digR --- artR
   digR --- chan
   chan --- afeR
 ```
@@ -185,6 +187,9 @@ flowchart TB
 - Left: vertical `VDPWR` / `VGND` met4 stripes from DEF init.
 - Top: OpenLane `sar_digital` child (met4-max, no met5), analog pins (`cmp_out`,
   `sample`, `dac_bits[11:0]`) on its **south edge**, facing down into the channel.
+- East of the macro: decorative **`silicon_art`** (185×130 µm) at `(140, 68)` —
+  met4 cat faces + hearts + `DBS` signature. Floating metal only (no pins / power);
+  no impact on SAR behavior. See [`mag/macros/silicon_art/`](../mag/macros/silicon_art/).
 - Bottom: the **dense** AFE `mag/afe_analog_dense` (S/H + comparator + folded
   R-2R DAC), **253 × 44 µm**.
 - Between them: a met3-vertical / met4-horizontal channel carries all 14 signals;
@@ -203,9 +208,10 @@ flowchart TB
   and the `sar_digital` PDN straps (`VPWR`/`VGND`) are physically bridged to the
   `VDPWR`/`VGND` met4 stripes.
 - **Verified:** full-tile DRC is **clean** (KLayout `mr` FEOL+BEOL = 0, Magic
-  DRC = 0); hierarchical full-tile connectivity LVS (`make top-verify`) confirms
-  every net — analog I/O, the shared DAC/sample/cmp bus, all digital I/O to the
-  boundary, and `sar_digital` `VPWR`→`VDPWR` (macro powered; no floating supply).
+  DRC = 0, including art offgrid snap); hierarchical full-tile connectivity LVS
+  (`make top-verify`) confirms every net — analog I/O, the shared DAC/sample/cmp
+  bus, all digital I/O to the boundary, and `sar_digital` `VPWR`→`VDPWR` (macro
+  powered; no floating supply).
 
 Rebuild: `cd mag && make update_gds`. See [`mag/README.md`](../mag/README.md)
 (analog custom_gds — not digital `tt_tool` local-harden).

@@ -1,11 +1,14 @@
 <!---
-Tiny Tapeout datasheet — heart_monitor_adc / tt_um_davidbroughsmyth_ecg_sar12
+Tiny Tapeout datasheet — heart_monitor_adc_art / tt_um_davidbroughsmyth_ecg_sar12
 -->
 
-# heart_monitor_adc
+# heart_monitor_adc_art
 
-12-bit ~500 SPS successive-approximation (SAR) ADC companion for the
+Art fork of the 12-bit ~500 SPS SAR ADC companion for the
 [SNN heart monitor](https://github.com/davidbroughsmyth/snn_lif_neurons_ttsky26c).
+Same silicon function as
+[`heart_monitor_adc_ttsky26c`](https://github.com/davidbroughsmyth/heart_monitor_adc_ttsky26c),
+plus decorative met4 art in the free pocket east of the digital macro.
 
 | | |
 |---|---|
@@ -27,6 +30,7 @@ Demoboard wiring: [INTEGRATION.md](INTEGRATION.md)
 - Digital bus matches SNN ADC consumer (`uo` / `uio` + `sample_en`)
 - RTL sim path via pin vin proxy + behavioral comparator (no SPICE required)
 - Silicon path: Magic AFE + OpenLane-hardened `sar_digital` on TT analog template
+- Decorative met4 silicon art (cats / hearts / `DBS`) — non-functional
 
 ## Block diagram
 
@@ -59,6 +63,20 @@ flowchart LR
 
 **Silicon:** `ua[0]` = `vin_ecg`, `ua[1]` = `vref`. Ideal SPICE AFE in
 [`analog/`](../analog/).
+
+### Silicon art (decorative)
+
+Non-functional met4 doodle in the free space right of `sar_digital`:
+
+| | |
+|---|---|
+| Cell | `silicon_art` — 185 × 130 µm |
+| Place | `(140, 68)` via `mag/build_top_2x2.tcl` |
+| Motif | Cat faces (whiskers, cute inverted-triangle nose hole, U-mouth) + hearts + `DBS` |
+| Electrical | Floating metal — **no** pins, power, or SAR impact (`ua` / `uo` / `uio` unchanged) |
+
+Regenerate: `python3 mag/macros/silicon_art/generate_art.py` then `cd mag && make top`.
+Preview: [`mag/macros/silicon_art/silicon_art.svg`](../mag/macros/silicon_art/silicon_art.svg).
 
 **Digital sim:** `{uio_in[7:5], ui_in} << 1` (even codes 0…4094) with
 `-DDIGITAL_CMP_MODEL` and [`analog_frontend_stub.v`](../src/analog_frontend_stub.v).

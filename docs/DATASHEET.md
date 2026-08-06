@@ -7,7 +7,7 @@ Tiny Tapeout SKY130 · Analog 2×2 tile · Mixed-signal
 | | |
 |---|---|
 | Device | `tt_um_davidbroughsmyth_ecg_sar12` |
-| Family | heart_monitor_adc |
+| Family | heart_monitor_adc_art |
 | Process | sky130A |
 | Package | TT analog tile 2×2 (~335 µm × 226 µm) |
 | Analog pins | 2 |
@@ -178,6 +178,9 @@ Magic layout `mag/afe_analog` is netgen-LVS-clean vs `analog/sky130/sar_afe.spic
 **dense** variant `mag/afe_analog_dense` (253×44 µm, same netlist) is placed and
 routed to the `sar_digital` macro in the **2×2** top (`mag/build_top_2x2.tcl`):
 DRC-clean (benign `met1.6` only) with extraction-verified AFE↔macro connectivity.
+The free pocket **east of the macro** holds non-functional met4 **`silicon_art`**
+(cats / hearts / `DBS`, 185×130 µm at `(140, 68)`) — decorative only; pinout and
+electrical behavior match the pristine ADC.
 
 **Simulation mode.** With `-DDIGITAL_CMP_MODEL`, comparison uses the digital vin proxy;
 `analog_frontend_stub` stands in for the AFE.

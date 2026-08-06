@@ -1,7 +1,13 @@
-# User Manual — heart_monitor_adc on Tiny Tapeout demoboard
+# User Manual — heart_monitor_adc_art on Tiny Tapeout demoboard
 
-How to **use and test** `tt_um_davidbroughsmyth_ecg_sar12` alone, and how to exercise it
-**together with** `tt_um_snn_lif_neuron` using the RP2350 on the Tiny Tapeout demo PCB.
+How to **use and test** `tt_um_davidbroughsmyth_ecg_sar12` (this **art fork**) alone,
+and how to exercise it **together with** `tt_um_snn_lif_neuron` using the RP2350 on
+the Tiny Tapeout demo PCB.
+
+**Cosmetic only:** the met4 silicon art east of the digital macro does not change
+pinout, timing, or demoboard bring-up vs the pristine
+[`heart_monitor_adc_ttsky26c`](https://github.com/davidbroughsmyth/heart_monitor_adc_ttsky26c)
+ASIC — same top module name and HIL scripts.
 
 | Doc | Link |
 |---|---|

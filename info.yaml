@@ -1,9 +1,9 @@
 # Tiny Tapeout project information
 project:
-  title:        "heart_monitor_adc"
+  title:        "heart_monitor_adc_art"
   author:       "davidbroughsmyth"
   discord:      ""
-  description:  "12-bit ~500 SPS SAR ADC companion for SNN heart monitor"
+  description:  "12-bit ~500 SPS SAR ADC + decorative met4 silicon art (cats/hearts/DBS)"
   language:     "Analog"
   clock_hz:     50000000
 
