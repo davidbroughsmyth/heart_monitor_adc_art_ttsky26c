@@ -229,7 +229,7 @@ GDS/LEF: `gds/tt_um_davidbroughsmyth_ecg_sar12.gds`,
 | Field | Value |
 |---|---|
 | Part / top module | `tt_um_davidbroughsmyth_ecg_sar12` |
-| Repository | https://github.com/davidbroughsmyth/heart_monitor_adc_ttsky26c |
+| Repository | https://github.com/davidbroughsmyth/heart_monitor_adc_art_ttsky26c |
 | Shuttle family | TTSKY (sky130A) |
 | Companion SNN | `tt_um_snn_lif_neuron` |
 
