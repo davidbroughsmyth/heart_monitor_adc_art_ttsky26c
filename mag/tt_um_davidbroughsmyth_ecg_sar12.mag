@@ -1,7 +1,7 @@
 magic
 tech sky130A
 magscale 1 2
-timestamp 1785996199
+timestamp 1785996557
 << checkpaint >>
 rect 4852 46130 20172 46364
 rect 23754 46130 26378 46152
@@ -1896,7 +1896,7 @@ timestamp 0
 transform 1 0 8000 0 1 13000
 box 566 0 17374 28000
 use silicon_art  silicon_art_0
-timestamp 1786032183
+timestamp 1786032552
 transform 1 0 28000 0 1 13600
 box 1666 424 35334 25008
 << labels >>
