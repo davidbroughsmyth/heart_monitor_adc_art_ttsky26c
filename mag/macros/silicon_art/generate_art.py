@@ -98,17 +98,17 @@ def cat_face(ox: float, oy: float, s: float) -> list:
         R(cx - 0.007 * s, oy + 0.28 * s, cx + 0.007 * s, oy + 0.32 * s),
     ]
 
-    # Two mouth arcs (∪ ∪) as holes under the nose — classic cat smile
+    # Two mouth arcs as holes — mirrored ∪ (∩): inside rises higher, outside drops lower
     t = max(1.4, 0.028 * s)   # cut stroke (≥ met4-visible / spacing-safe)
     mouth = [
-        # left arc
-        R(cx - 0.18 * s, oy + 0.16 * s, cx - 0.18 * s + t, oy + 0.26 * s),
-        R(cx - 0.18 * s, oy + 0.14 * s, cx - 0.04 * s, oy + 0.14 * s + t),
-        R(cx - 0.04 * s - t, oy + 0.14 * s, cx - 0.04 * s, oy + 0.20 * s),
-        # right arc
-        R(cx + 0.18 * s - t, oy + 0.16 * s, cx + 0.18 * s, oy + 0.26 * s),
-        R(cx + 0.04 * s, oy + 0.14 * s, cx + 0.18 * s, oy + 0.14 * s + t),
-        R(cx + 0.04 * s, oy + 0.14 * s, cx + 0.04 * s + t, oy + 0.20 * s),
+        # left ∩
+        R(cx - 0.18 * s, oy + 0.22 * s, cx - 0.04 * s, oy + 0.22 * s + t),       # top bar
+        R(cx - 0.18 * s, oy + 0.08 * s, cx - 0.18 * s + t, oy + 0.22 * s + t),   # outside down
+        R(cx - 0.04 * s - t, oy + 0.14 * s, cx - 0.04 * s, oy + 0.22 * s + t),   # inside (higher)
+        # right ∩
+        R(cx + 0.04 * s, oy + 0.22 * s, cx + 0.18 * s, oy + 0.22 * s + t),
+        R(cx + 0.18 * s - t, oy + 0.08 * s, cx + 0.18 * s, oy + 0.22 * s + t),
+        R(cx + 0.04 * s, oy + 0.14 * s, cx + 0.04 * s + t, oy + 0.22 * s + t),
     ]
 
     holes = gdstk.boolean(eyes + nose + mouth, [], "or",
