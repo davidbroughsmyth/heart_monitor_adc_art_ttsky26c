@@ -1,7 +1,7 @@
 magic
 tech sky130A
 magscale 1 2
-timestamp 1786077074
+timestamp 1786077337
 << checkpaint >>
 rect 25378 8376 30696 8396
 rect 15578 8276 20896 8296
@@ -13827,41 +13827,41 @@ rect 4366 -212 4382 212
 rect 4286 -228 4382 -212
 << labels >>
 rlabel via1 2026 -900 2026 -900 0 vin_ecg
-port 19 nsew
+port 37 nsew
 rlabel via1 14926 -800 14926 -800 0 vref
-port 20 nsew
+port 38 nsew
 rlabel via1 509 -600 509 -600 0 gnd
-port 21 nsew
+port 39 nsew
 rlabel via1 1209 -700 1209 -700 0 vdd
-port 22 nsew
+port 40 nsew
 rlabel via1 700 600 700 600 0 sample
-port 23 nsew
+port 41 nsew
 rlabel via1 12274 -1100 12274 -1100 0 cmp_out
-port 24 nsew
+port 42 nsew
 rlabel via1 13600 1400 13600 1400 0 b0
-port 25 nsew
+port 43 nsew
 rlabel via1 19200 1500 19200 1500 0 b1
-port 26 nsew
+port 44 nsew
 rlabel via1 24800 1600 24800 1600 0 b2
-port 27 nsew
+port 45 nsew
 rlabel via1 30400 1700 30400 1700 0 b3
-port 28 nsew
+port 46 nsew
 rlabel via1 36000 1800 36000 1800 0 b4
-port 29 nsew
+port 47 nsew
 rlabel via1 41600 1900 41600 1900 0 b5
-port 30 nsew
+port 48 nsew
 rlabel via1 700 5400 700 5400 0 b6
-port 31 nsew
+port 49 nsew
 rlabel via1 5600 5500 5600 5500 0 b7
-port 32 nsew
+port 50 nsew
 rlabel via1 10500 5600 10500 5600 0 b8
-port 33 nsew
+port 51 nsew
 rlabel via1 15400 5700 15400 5700 0 b9
-port 34 nsew
+port 52 nsew
 rlabel via1 20300 5800 20300 5800 0 b10
-port 35 nsew
+port 53 nsew
 rlabel via1 25200 5900 25200 5900 0 b11
-port 36 nsew
+port 54 nsew
 << properties >>
 string FIXED_BBOX -148 -704 148 704
 << end >>
