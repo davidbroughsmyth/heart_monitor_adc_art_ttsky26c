@@ -11,6 +11,9 @@
 # half's cy so every ladder resistor bridges one up-track / one down-track.
 source afe_lib.tcl
 set CELL afe_analog_dense
+# Always start from an empty cell — `load` of an existing .mag would MERGE and
+# leave stale via paint (e.g. old MiM via2 at x=20.5) that fails DRC.
+catch {cellname delete $CELL}
 load $CELL
 
 proc assign {nets y0 dir} { global TR; set y $y0; foreach n $nets { set TR($n) $y; set y [expr {$y+$dir}] } }
@@ -62,8 +65,13 @@ wFET [afe::fet nfet 1.00 0.15 [nx] 0.0] vin vhold   sample    gnd
 wFET [afe::fet pfet 2.00 0.15 [nx] 0.0] vin vhold   sample_b  vdd
 # hold cap (2x2 MIM): top plate met4 -> vhold, bottom plate met3 -> gnd
 afe::cap 2 2 20.0 0.0
-afe::via2 20.5 0.0; afe::via 20.5 0.0; afe::m1v 20.5 0.0 [T gnd];   afe::via 20.5 [T gnd]
-reg gnd 20.5
+# Bottom-plate gnd access must keep via2 >=0.1µm clear of MiM (capm.8). Landing
+# on the plate at x=20.5 streamed zero cuts before via2 paint was enlarged;
+# real cuts then failed precheck. Land outside and strap on met3.
+afe::via2 23.2 0.0
+afe::pbox met3 20.5 -0.26 23.46 0.26
+afe::via  23.2 0.0; afe::m1v 23.2 0.0 [T gnd]; afe::via 23.2 [T gnd]
+reg gnd 23.2
 # vhold top-plate access: keep the via3 met3 pad >=1.2um from the MiM bottom
 # plate met3 (capm left edge 18.27 -> bot_plate 18.13; MR_capm.SP.2). At x=16.5
 # the met3 pad right edge is 16.76 (1.37um clear). met4 bridge reaches the plate.

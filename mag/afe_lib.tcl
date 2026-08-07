@@ -126,13 +126,15 @@ proc afe::m2v {x y0 y1} {
 }
 # via1 stud met1<->met2 at (x,y)
 # IMPORTANT: Magic cifoutput VIA1 uses `squares-grid 55 150 170` — it only emits
-# 0.15µm cuts inside the painted via region where both metals exist. Painting a
-# 0.17×0.17 marker (±0.085) streams ZERO cuts (same bug as via2/via3). Paint
-# via1 over the full metal pad so >=1 cut is generated.
+# 0.15µm cuts inside the painted via∩metals region. A 0.17×0.17 marker streams
+# ZERO cuts. Painting via1 over the full metal pad emits cuts but they can sit
+# on the pad edge and fail via.5a / met2.5 (0.03µm directional enclosure).
+# Paint via1 inset by 0.04 so every streamed cut keeps ≥0.03 enclosure.
 proc afe::via {x y} {
-    set a 0.15 ;# met1 0.30x0.30 (>=0.083 area), keeps clearance to neighbours
+    set a 0.18 ;# metal pad 0.36×0.36 (area + room for inset via paint)
+    set v 0.14 ;# via paint 0.28×0.28 (= a-0.04)
     afe::pbox met1 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
-    afe::pbox via1 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
+    afe::pbox via1 [expr {$x-$v}] [expr {$y-$v}] [expr {$x+$v}] [expr {$y+$v}]
     afe::pbox met2 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
 }
 # via2 met2<->met3 ; via3 met3<->met4 (bigger cut 0.2, enclosure 0.185)
