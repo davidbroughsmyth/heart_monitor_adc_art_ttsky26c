@@ -125,18 +125,16 @@ proc afe::m2v {x y0 y1} {
     afe::pbox met2 [expr {$x-0.08}] $lo [expr {$x+0.08}] $hi
 }
 # via1 stud met1<->met2 at (x,y)
-# IMPORTANT: Magic cifoutput VIA1 uses `squares-grid 55 150 170` — it only emits
-# 0.15µm cuts inside the painted via∩metals region. A 0.17×0.17 marker streams
-# ZERO cuts. Painting via1 over the full metal pad emits cuts but they can sit
-# on the pad edge and fail via.5a / met2.5 (0.03µm enclosure). Painting a larger
-# metal pad (0.36) fixed enclosure/emission but failed met1.2/met2.2 spacing.
-# Keep the spacing-safe 0.30 metal pad and inset the via1 paint by 0.03.
+# IMPORTANT: Magic cifoutput VIA1 uses `squares-grid 55 150 170`. A ~0.17–0.24
+# marker streams ZERO cuts; ~0.28 emits. Via.5a enclosure is *directional*
+# (needs ≥0.03 on one opposite-side pair). Grow met1 mainly in Y (track-safe
+# width 0.30) and met2 mainly in X (track-safe height 0.30) so each metal
+# encloses on its long axis without bloating the spacing-critical axis.
 proc afe::via {x y} {
-    set a 0.15 ;# metal pad 0.30×0.30 — spacing-safe to neighbours
-    set v 0.12 ;# via paint 0.24×0.24 (= a-0.03) keeps ≥0.03 enclosure
-    afe::pbox met1 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
-    afe::pbox via1 [expr {$x-$v}] [expr {$y-$v}] [expr {$x+$v}] [expr {$y+$v}]
-    afe::pbox met2 [expr {$x-$a}] [expr {$y-$a}] [expr {$x+$a}] [expr {$y+$a}]
+    set vx 0.14 ;# via paint 0.28×0.28
+    afe::pbox met1 [expr {$x-0.15}] [expr {$y-0.18}] [expr {$x+0.15}] [expr {$y+0.18}]
+    afe::pbox met2 [expr {$x-0.18}] [expr {$y-0.15}] [expr {$x+0.18}] [expr {$y+0.15}]
+    afe::pbox via1 [expr {$x-$vx}] [expr {$y-$vx}] [expr {$x+$vx}] [expr {$y+$vx}]
 }
 # via2 met2<->met3 ; via3 met3<->met4 (bigger cut 0.2, enclosure 0.185)
 # IMPORTANT: Magic cifoutput uses `squares-grid` for VIA2/VIA3 — it only emits
