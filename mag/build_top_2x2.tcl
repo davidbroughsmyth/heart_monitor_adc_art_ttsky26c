@@ -63,17 +63,17 @@ set aoy $AOY
 puts "AFE_ORIGIN aox=$aox aoy=$aoy"
 select clear
 
-# ---- place sar_digital. Need ≥0.65µm met4 pitch in AFE↔macro channel (met4.2).
-#      DY=69 → channel ~58..68; dig MNY=207 with 0.70µm north pitch. ----
-set DX 40.0 ; set DY 69.0
-set MNY [expr {$DY+138.0}]     ;# macro north signal-pin row (local y138)
+# ---- place sar_digital. met4.2 needs pitch ≥0.82 with via3 pads (a=0.26).
+#      DY=72 leaves channel for 14×0.82µm AFE↔macro met4; dig stays at 203.7+. ----
+set DX 40.0 ; set DY 72.0
+set MNY [expr {$DY+138.0}]     ;# macro north = 210
 gds readonly true ; gds rescale false ; gds flatten false
 gds read macros/sar_digital/sar_digital.gds
 load $TOP
 box ${DX}um ${DY}um [expr {$DX+1}]um [expr {$DY+1}]um
 getcell sar_digital
 
-# ===== AFE<->macro interface (met4 pitch ≥0.65 for met4.2) =====
+# ===== AFE<->macro interface (met4 pitch 0.82 = dig, clears via3 pads) =====
 array set PINX {cmp_out 2.99 sample 9.43}
 for {set i 0} {$i<12} {incr i} { set PINX(b$i) [expr {15.87+6.44*$i}] }
 proc sig {cx cy net ytr} {
@@ -90,20 +90,20 @@ proc sig {cx cy net ytr} {
   tapvia2 $xt $yt
 }
 # Unique xt: sample & b4 share VMN=3.5 — tap different x on each track.
-sig 103.12  -5.5  cmp_out 58.00
-sig  10.5    3.0  sample  58.70
-sig 110.0    7.0  b0      59.40
-sig 138.0    7.5  b1      60.10
-sig 166.0    8.0  b2      60.80
-sig 194.0    8.5  b3      61.50
-sig  12.0   29.0  b4      62.20
-sig  28.0   29.5  b5      62.90
-sig  52.5   30.0  b6      63.60
-sig  77.0   30.5  b7      64.30
-sig 101.5   31.0  b8      65.00
-sig 126.0   31.5  b9      65.70
-sig 150.5   32.0  b10     66.40
-sig 175.0   32.5  b11     67.10
+sig 112.62  -5.5  cmp_out 58.00
+sig  10.5    3.0  sample  58.82
+sig 120.0    7.0  b0      59.64
+sig 148.0    7.5  b1      60.46
+sig 176.0    8.0  b2      61.28
+sig 204.0    8.5  b3      62.10
+sig  12.0   29.0  b4      62.92
+sig  28.0   29.5  b5      63.74
+sig  52.5   30.0  b6      64.56
+sig  77.0   30.5  b7      65.38
+sig 101.5   31.0  b8      66.20
+sig 126.0   31.5  b9      67.02
+sig 150.5   32.0  b10     67.84
+sig 175.0   32.5  b11     68.66
 
 # ===== analog input pins: vin_ecg->ua[0]@152.26, vref->ua[1]@132.94 (south) =====
 proc ana {cx cy ydn xpin} {
@@ -117,7 +117,7 @@ proc ana {cx cy ydn xpin} {
   afe::pbox met4 [expr {$xpin-0.16}] [expr {$ydn-0.16}] [expr {$xpin+0.16}] [expr {$ydn+0.16}]
 }
 ana  10.13  -4.5  3.7 152.26   ;# vin_ecg -> ua[0]
-ana 116.63  -4.0  2.5 132.94   ;# vref   -> ua[1]
+ana 100.00  -4.0  2.5 132.94   ;# vref   -> ua[1]
 
 
 # ===== AFE power -> stripes (below the AFE) =====
@@ -140,18 +140,18 @@ afe::via3 7.0 5.0
 afe::pbox met3 1.3 4.84 7.16 5.16
 afe::via3 2.0 5.0
 
-# ===== macro PDN -> stripes (DY=69 → STRAPTOP≈197; bridges at 200/202) =====
+# ===== macro PDN -> stripes (DY=72 → STRAPTOP≈200; bridges at 203/205) =====
 set STRAPTOP [expr {$DY+128.08}]
 proc strapext {x y} { global STRAPTOP
   afe::pbox met4 [expr {$x-0.8}] [expr {$STRAPTOP-0.3}] [expr {$x+0.8}] $y }
 proc m3h {y x0 x1} { set lo [expr {min($x0,$x1)}]; set hi [expr {max($x0,$x1)}]
   afe::pbox met3 $lo [expr {$y-0.16}] $hi [expr {$y+0.16}] }
-foreach sx {61.84 86.84} { strapext $sx 200.0 ; afe::via3 $sx 200.0 }
-m3h 200.0 2.0 86.84
-afe::via3 2.0 200.0
-foreach sx {74.34 99.34} { strapext $sx 202.0 ; afe::via3 $sx 202.0 }
-m3h 202.0 5.0 99.34
-afe::via3 5.0 202.0
+foreach sx {61.84 86.84} { strapext $sx 203.0 ; afe::via3 $sx 203.0 }
+m3h 203.0 2.0 86.84
+afe::via3 2.0 203.0
+foreach sx {74.34 99.34} { strapext $sx 205.0 ; afe::via3 $sx 205.0 }
+m3h 205.0 5.0 99.34
+afe::via3 5.0 205.0
 
 # ===== digital I/O: unique-y north channel (shared-met4 east corridor shorts) =====
 array set MPX {clk 4.83 rst_n 8.05}
