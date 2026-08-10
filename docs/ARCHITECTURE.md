@@ -192,9 +192,9 @@ flowchart TB
   edge into the AFE channel; dig I/O uses a **unique-y north channel**
   (`203.7 + 0.82·i`) to boundary pins (shared-met4 east corridor shorts dig nets).
 - NE pocket: decorative **`silicon_art`** (**95×70 µm**) at `(210, 130)` —
-  met4 cats / hearts / `DBS`. Floating metal only.
+  met4 cats / hearts / `DBS`. Floating metal only. Sits above Row-B / CM / AZ.
 - Bottom: dense AFE (`afe_analog_dense`) — ~1 pF S/H + AZ comparator + compact
-  R-2R (~312×51 µm, extract port-clean; netgen unique-match vs unit-R SPICE still open).
+  R-2R (~271×52 µm, 4+8 fold under art X — extract port-clean; netgen unique-match vs unit-R SPICE still open).
 - **Why 2×2:** tile height 225.76 µm limits stack-up. Keep `sar_digital`
   hierarchical (do **not** flatten).
 - **Digital I/O + power:** unique-y dig tracks for 26 dig nets; PDN straps
