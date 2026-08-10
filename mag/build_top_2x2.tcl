@@ -176,16 +176,14 @@ for {set i 0} {$i<8} {incr i} {
   set BPX(uio_out$i) [lindex $uioB $i]
   set BPX(uio_oe$i)  [lindex $oeB  $i]
 }
-# Dig tap ABOVE MNY; stagger x on alternate nets; skip dig y through MNY±0.9.
+# Dig tap ABOVE macro north (ytap=MNY+0.55). Keep via2 pad ≥0.36 for
+# Magic squares-grid cut emission (a=0.16 → via2.5 / m3.4 storm).
 proc dig {net ytr2} {
-  global MPX BPX DX MNY DIGI
+  global MPX BPX DX MNY
   set mpx [expr {$DX+$MPX($net)}]
   set bpx $BPX($net)
-  set a 0.16
-  set ytap [expr {$MNY + 0.90}]
-  # Stagger tap x so adjacent dig via pads at ytap clear met3.2
-  set ox [expr {($DIGI % 2) ? 0.40 : -0.40}]
-  set mpx [expr {$mpx + $ox}]
+  set a 0.18
+  set ytap [expr {$MNY + 0.55}]
   afe::pbox met2 [expr {$mpx-0.14}] [expr {$MNY-0.6}] [expr {$mpx+0.14}] [expr {$ytap+$a}]
   afe::pbox met2 [expr {$mpx-$a}] [expr {$ytap-$a}] [expr {$mpx+$a}] [expr {$ytap+$a}]
   afe::pbox via2 [expr {$mpx-$a}] [expr {$ytap-$a}] [expr {$mpx+$a}] [expr {$ytap+$a}]
@@ -200,11 +198,8 @@ proc dig {net ytr2} {
 set NETS {clk rst_n uo_out0 uo_out1 uo_out2 uo_out7 uio_out0 uo_out6 uio_out1 uo_out5 \
           uio_out2 uo_out4 uio_out3 uo_out3 uio_out4 uio_out5 uio_out6 uio_out7 \
           uio_oe0 uio_oe1 uio_oe2 uio_oe3 uio_oe4 uio_oe5 uio_oe6 uio_oe7}
-set DIGI 0
-foreach n $NETS {
-  dig $n [expr {203.5 + 0.82*$DIGI}]
-  incr DIGI
-}
+set i 0
+foreach n $NETS { dig $n [expr {203.7 + 0.82*$i}] ; incr i }
 
 # ---- decorative silicon art (95×70) NE pocket above Row-B / CM / AZ ----
 set ART_X 210.0

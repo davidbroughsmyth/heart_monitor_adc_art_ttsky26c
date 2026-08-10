@@ -10,6 +10,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN clk
     DIRECTION INPUT ;
     USE SIGNAL ;
+    ANTENNAGATEAREA 0.852000 ;
     PORT
       LAYER met4 ;
         RECT 143.830 224.760 144.130 225.760 ;
@@ -26,6 +27,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN rst_n
     DIRECTION INPUT ;
     USE SIGNAL ;
+    ANTENNAGATEAREA 0.213000 ;
     PORT
       LAYER met4 ;
         RECT 141.070 224.760 141.370 225.760 ;
@@ -290,6 +292,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uio_out[0]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 72.070 224.760 72.370 225.760 ;
@@ -298,6 +301,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uio_out[1]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 69.310 224.760 69.610 225.760 ;
@@ -306,6 +310,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uio_out[2]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 66.550 224.760 66.850 225.760 ;
@@ -314,6 +319,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uio_out[3]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 63.790 224.760 64.090 225.760 ;
@@ -322,6 +328,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uio_out[4]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 61.030 224.760 61.330 225.760 ;
@@ -354,6 +361,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uo_out[0]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 94.150 224.760 94.450 225.760 ;
@@ -362,6 +370,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uo_out[1]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 91.390 224.760 91.690 225.760 ;
@@ -370,6 +379,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uo_out[2]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 88.630 224.760 88.930 225.760 ;
@@ -378,6 +388,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uo_out[3]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 85.870 224.760 86.170 225.760 ;
@@ -386,6 +397,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uo_out[4]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 83.110 224.760 83.410 225.760 ;
@@ -394,6 +406,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uo_out[5]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 80.350 224.760 80.650 225.760 ;
@@ -402,6 +415,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uo_out[6]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 77.590 224.760 77.890 225.760 ;
@@ -410,6 +424,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
   PIN uo_out[7]
     DIRECTION OUTPUT TRISTATE ;
     USE SIGNAL ;
+    ANTENNADIFFAREA 0.795200 ;
     PORT
       LAYER met4 ;
         RECT 74.830 224.760 75.130 225.760 ;
