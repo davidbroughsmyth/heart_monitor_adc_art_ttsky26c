@@ -66,27 +66,27 @@ afe::via3 25.5 0.0; afe::via2 25.5 0.0; afe::via 25.5 0.0
 afe::m1v 25.5 0.0 [T vhold]; afe::via 25.5 [T vhold]
 reg vhold 25.5
 
-# AZ MiMs FIRST at FAR EAST (cy=0); keep die-local ≤~325 with place@8.
-# C1@298 plate 286..310; C2@316 plate 311..321; jogs n3/dac at 282-284.5.
-afe::cap 24 24 298.0 0.0
-afe::via2 314.0 0.0
-afe::pbox met3 309.5 -0.26 314.26 0.26
-afe::via 314.0 0.0; afe::m1v 314.0 0.0 [T az1]; afe::via 314.0 [T az1]
-reg az1 314.0
-afe::m4h 0.0 276.0 282.0
-afe::via3 276.5 0.0; afe::via2 276.5 0.0; afe::via 276.5 0.0
-afe::m1v 276.5 0.0 [T vp]; afe::via 276.5 [T vp]
-reg vp 276.5
+# AZ MiMs FIRST at FAR EAST (cy=0). Plate left ≥290 (≥3µm past jogs@287).
+# C1 18×18 @299 → plate 290..308; C2 10×10 @314 → plate 309..319; place@8 ≈332.
+afe::cap 18 18 299.0 0.0
+afe::via2 312.0 0.0
+afe::pbox met3 308.0 -0.26 312.26 0.26
+afe::via 312.0 0.0; afe::m1v 312.0 0.0 [T az1]; afe::via 312.0 [T az1]
+reg az1 312.0
+afe::m4h 0.0 287.5 291.0
+afe::via3 288.5 0.0; afe::via2 288.5 0.0; afe::via 288.5 0.0
+afe::m1v 288.5 0.0 [T vp]; afe::via 288.5 [T vp]
+reg vp 288.5
 
-afe::cap 10 10 316.0 0.0
-afe::via2 324.0 0.0
-afe::pbox met3 320.5 -0.26 324.26 0.26
-afe::via 324.0 0.0; afe::m1v 324.0 0.0 [T az2]; afe::via 324.0 [T az2]
-reg az2 324.0
-afe::m4h 0.0 306.0 312.0
-afe::via3 306.5 0.0; afe::via2 306.5 0.0; afe::via 306.5 0.0
-afe::m1v 306.5 0.0 [T vm]; afe::via 306.5 [T vm]
-reg vm 306.5
+afe::cap 10 10 314.0 0.0
+afe::via2 322.0 0.0
+afe::pbox met3 318.5 -0.26 322.26 0.26
+afe::via 322.0 0.0; afe::m1v 322.0 0.0 [T az2]; afe::via 322.0 [T az2]
+reg az2 322.0
+afe::m4h 0.0 304.0 310.0
+afe::via3 304.5 0.0; afe::via2 304.5 0.0; afe::via 304.5 0.0
+afe::m1v 304.5 0.0 [T vm]; afe::via 304.5 [T vm]
+reg vm 304.5
 
 # ===== Row A: Sample/Hold =====
 set X 3.5
@@ -172,9 +172,9 @@ wRES [afe::res 1.75 [nx] $YB] n8  n9      gndB
 wRES [afe::res 1.75 [nx] $YB] n9  n10     gndB
 wRES [afe::res 1.75 [nx] $YB] n10 dac_out gndB
 
-# ---- cross-row jogs: rails west (clear of Chold/vhold); ladder/feedback east of AZ FETs ----
-set JOGS {{gnd gndB 18.0} {vdd vddB 20.5} {vref vrefB 23.0} \
-          {n3 n3b 282.0} {dac_out vdac 284.5}}
+# ---- cross-row jogs between AZ FETs (~ends 280) and AZ MiMs (plate@286+) ----
+set JOGS {{gnd gndB 281.0} {vdd vddB 282.5} {vref vrefB 284.0} \
+          {n3 n3b 285.5} {dac_out vdac 287.0}}
 foreach j $JOGS { reg [lindex $j 0] [lindex $j 2]; reg [lindex $j 1] [lindex $j 2] }
 
 foreach n [array names TR] {

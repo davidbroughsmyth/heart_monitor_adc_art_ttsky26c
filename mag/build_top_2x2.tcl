@@ -116,8 +116,8 @@ proc ana {cx cy ydn xpin} {
   m4v $xpin $ydn 0.5
   afe::pbox met4 [expr {$xpin-0.16}] [expr {$ydn-0.16}] [expr {$xpin+0.16}] [expr {$ydn+0.16}]
 }
-ana  10.13  -4.5  3.7 152.26   ;# vin_ecg -> ua[0]
-ana 100.00  -4.0  2.5 132.94   ;# vref   -> ua[1]
+ana  10.13  -4.5  3.8 152.26   ;# vin_ecg -> ua[0]
+ana 100.00  -4.0  2.2 132.94   ;# vref   -> ua[1] (ydn separated vs vin)
 
 
 # ===== AFE power -> stripes (below the AFE) =====
@@ -140,18 +140,19 @@ afe::via3 7.0 5.0
 afe::pbox met3 1.3 4.84 7.16 5.16
 afe::via3 2.0 5.0
 
-# ===== macro PDN -> stripes (DY=72 → STRAPTOP≈200; bridges at 203/205) =====
+# ===== macro PDN -> stripes (DY=72 → STRAPTOP≈200) =====
+# Keep bridges BELOW dig met4 (starts 203.7): via3 pads ±0.26 need ≥0.3µm met3/met4.2.
 set STRAPTOP [expr {$DY+128.08}]
 proc strapext {x y} { global STRAPTOP
   afe::pbox met4 [expr {$x-0.8}] [expr {$STRAPTOP-0.3}] [expr {$x+0.8}] $y }
 proc m3h {y x0 x1} { set lo [expr {min($x0,$x1)}]; set hi [expr {max($x0,$x1)}]
   afe::pbox met3 $lo [expr {$y-0.16}] $hi [expr {$y+0.16}] }
-foreach sx {61.84 86.84} { strapext $sx 203.0 ; afe::via3 $sx 203.0 }
-m3h 203.0 2.0 86.84
-afe::via3 2.0 203.0
-foreach sx {74.34 99.34} { strapext $sx 205.0 ; afe::via3 $sx 205.0 }
-m3h 205.0 5.0 99.34
-afe::via3 5.0 205.0
+foreach sx {61.84 86.84} { strapext $sx 200.5 ; afe::via3 $sx 200.5 }
+m3h 200.5 2.0 86.84
+afe::via3 2.0 200.5
+foreach sx {74.34 99.34} { strapext $sx 202.0 ; afe::via3 $sx 202.0 }
+m3h 202.0 5.0 99.34
+afe::via3 5.0 202.0
 
 # ===== digital I/O: unique-y north channel (shared-met4 east corridor shorts) =====
 array set MPX {clk 4.83 rst_n 8.05}
