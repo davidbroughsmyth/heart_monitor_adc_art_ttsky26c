@@ -16,7 +16,7 @@ Schematic-level models of the silicon path:
 | Real-device Magic cells (`sky130_fd_pr` gencells) | **LVS-clean** — see table below |
 | `afe_analog` (connected S/H + comparator + 12-bit R-2R DAC), single row | **netgen LVS vs `sar_afe.spice`: Circuits match uniquely** (~400×66 µm) |
 | `afe_analog_folded` (same AFE, DAC folded into 2 rows) | **LVS vs `sar_afe.spice`: Circuits match uniquely** — **253×78 µm** |
-| `afe_analog_dense` (1 pF Chold, AZ cmp, compact R-2R) | **Extract port-clean** (~312×51 µm); netgen vs SPICE not unique yet (compact ladder / CM `l` proxy vs unit-R SPICE) |
+| `afe_analog_dense` (1 pF Chold, AZ cmp, compact R-2R) | **Extract port-clean** (~271×52 µm, 4+8 fold / CM+AZ under art X); netgen vs SPICE not unique yet (compact ladder / CM `l` proxy) |
 | Signoff DRC (Magic, GDS round-trip) | Aim benign `met1.6` only; confirm after `make top` |
 | Macro pins | `sar_digital` re-hardened (midscale-during-AZ FSM); south analog pins; `SETTLE_CYCLES=8` |
 | Compact die-fit + routing to macro (**2×2**) | **Done** — east dig corridor, raised macro, shrunk `silicon_art` (95×70) |

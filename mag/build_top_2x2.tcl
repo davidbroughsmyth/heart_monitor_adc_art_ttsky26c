@@ -51,19 +51,19 @@ proc tapvia2 {x y} {
   afe::pbox met3 [expr {$x-0.26}] [expr {$y-0.26}] [expr {$x+0.26}] [expr {$y+0.26}]
 }
 
-# ---- place the dense AFE (low); AZ cell ~312 µm wide — fits 2×2 die under
-#      DY=65 (east overshoot past macro, not past DIEAREA). ----
-box 8um 8um 9um 9um
+# ---- place dense AFE: local bbox ~(-1,-11)‥(270,41). Place high enough that
+#      abs y ≥5 (power stripe / project area), width fits DIEAREA under art. ----
+set AOX 8.0
+set AOY 17.0
+box ${AOX}um ${AOY}um [expr {$AOX+1}]um [expr {$AOY+1}]um
 getcell afe_analog_dense
 select cell afe_analog_dense_0
-set bb [box values]
-set aox [expr {[lindex $bb 0]/200.0 + 1.005}]
-set aoy [expr {[lindex $bb 1]/200.0 + 8.65}]
+set aox $AOX
+set aoy $AOY
 puts "AFE_ORIGIN aox=$aox aoy=$aoy"
 select clear
 
-# ---- place sar_digital at (DX,DY). DY=65 leaves a north channel for unique-y
-#      dig routes (203.7..224); AFE↔macro channel uses ytr ~53..63. ----
+# ---- place sar_digital. AFE top ~58; DY=65 keeps proven north dig pitch. ----
 set DX 40.0 ; set DY 65.0
 set MNY [expr {$DY+138.0}]     ;# macro north signal-pin row (local y138)
 gds readonly true ; gds rescale false ; gds flatten false
@@ -72,9 +72,7 @@ load $TOP
 box ${DX}um ${DY}um [expr {$DX+1}]um [expr {$DY+1}]um
 getcell sar_digital
 
-# ===== AFE<->macro interface (low channel). ytr sits between AFE top and DY.
-# Port (cx,cy) from AFEPORT of port-clean AZ `afe_analog_dense` (YB=28). =====
-# macro SOUTH pin x offsets (macro-local) = pin RECT CENTRES from sar_digital.lef
+# ===== AFE<->macro interface (channel under DY=65). =====
 array set PINX {cmp_out 2.99 sample 9.43}
 for {set i 0} {$i<12} {incr i} { set PINX(b$i) [expr {15.87+6.44*$i}] }
 proc sig {cx cy net ytr} {
@@ -90,22 +88,21 @@ proc sig {cx cy net ytr} {
   m3v $xt $ytr $yt
   tapvia2 $xt $yt
 }
-#    cx     cy    net     ytr  (AFE↔macro channel under DY=65)
-# Unique xt: sample & b6 share VMN=3.5 — tap different x on each track.
-sig  93.62  -5.5  cmp_out 53.00
-sig  10.5    3.0  sample  53.55
-sig 100.0    7.0  b0      54.10
-sig 128.0    7.5  b1      54.65
-sig 156.0    8.0  b2      55.20
-sig 184.0    8.5  b3      55.75
-sig 212.0    9.0  b4      56.30
-sig 240.0    9.5  b5      56.85
-sig  12.0   31.0  b6      57.40
-sig  28.0   31.5  b7      57.95
-sig  52.5   32.0  b8      58.50
-sig  77.0   32.5  b9      59.05
-sig 101.5   33.0  b10     59.60
-sig 126.0   33.5  b11     60.15
+# Unique xt: sample & b4 share VMN=3.5 — tap different x on each track.
+sig  93.62  -5.5  cmp_out 56.50
+sig  10.5    3.0  sample  57.00
+sig 100.0    7.0  b0      57.50
+sig 128.0    7.5  b1      58.00
+sig 156.0    8.0  b2      58.50
+sig 184.0    8.5  b3      59.00
+sig  12.0   29.0  b4      59.50
+sig  28.0   29.5  b5      60.00
+sig  52.5   30.0  b6      60.50
+sig  77.0   30.5  b7      61.00
+sig 101.5   31.0  b8      61.50
+sig 126.0   31.5  b9      62.00
+sig 150.5   32.0  b10     62.50
+sig 175.0   32.5  b11     63.00
 
 # ===== analog input pins: vin_ecg->ua[0]@152.26, vref->ua[1]@132.94 (south) =====
 proc ana {cx cy ydn xpin} {
@@ -120,6 +117,7 @@ proc ana {cx cy ydn xpin} {
 }
 ana  10.13  -4.5  3.7 152.26   ;# vin_ecg -> ua[0]
 ana 106.63  -4.0  2.5 132.94   ;# vref   -> ua[1]
+
 
 # ===== AFE power -> stripes (below the AFE) =====
 proc pwr {cx cy ydn xstripe} {
@@ -141,7 +139,7 @@ afe::via3 7.0 5.0
 afe::pbox met3 1.3 4.84 7.16 5.16
 afe::via3 2.0 5.0
 
-# ===== macro PDN -> stripes (DY=65 → STRAPTOP≈194; bridges at 197/199) =====
+# ===== macro PDN -> stripes (DY=65 → STRAPTOP≈193; bridges at 197/199) =====
 set STRAPTOP [expr {$DY+128.08}]
 proc strapext {x y} { global STRAPTOP
   afe::pbox met4 [expr {$x-0.8}] [expr {$STRAPTOP-0.3}] [expr {$x+0.8}] $y }
@@ -192,7 +190,7 @@ set NETS {clk rst_n uo_out0 uo_out1 uo_out2 uo_out7 uio_out0 uo_out6 uio_out1 uo
 set i 0
 foreach n $NETS { dig $n [expr {203.7 + 0.82*$i}] ; incr i }
 
-# ---- decorative silicon art (shrunk 95×70) in the NE pocket ----
+# ---- decorative silicon art (95×70) NE pocket above Row-B / CM / AZ ----
 set ART_X 210.0
 set ART_Y 130.0
 gds read macros/silicon_art/silicon_art.gds
