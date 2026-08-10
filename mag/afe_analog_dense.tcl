@@ -73,10 +73,11 @@ afe::via2 312.0 0.0
 afe::pbox met3 308.0 -0.26 312.26 0.26
 afe::via 312.0 0.0; afe::m1v 312.0 0.0 [T az1]; afe::via 312.0 [T az1]
 reg az1 312.0
-afe::m4h 0.0 287.5 291.0
-afe::via3 288.5 0.0; afe::via2 288.5 0.0; afe::via 288.5 0.0
-afe::m1v 288.5 0.0 [T vp]; afe::via 288.5 [T vp]
-reg vp 288.5
+# Land west of plate (left@290); clear of jogs@≤280 and wide-met3 (MRW_met3.SP.2).
+afe::m4h 0.0 283.5 291.0
+afe::via3 285.0 0.0; afe::via2 285.0 0.0; afe::via 285.0 0.0
+afe::m1v 285.0 0.0 [T vp]; afe::via 285.0 [T vp]
+reg vp 285.0
 
 afe::cap 10 10 314.0 0.0
 afe::via2 322.0 0.0
@@ -172,9 +173,9 @@ wRES [afe::res 1.75 [nx] $YB] n8  n9      gndB
 wRES [afe::res 1.75 [nx] $YB] n9  n10     gndB
 wRES [afe::res 1.75 [nx] $YB] n10 dac_out gndB
 
-# ---- cross-row jogs between AZ FETs (~ends 280) and AZ MiMs (plate@286+) ----
-set JOGS {{gnd gndB 281.0} {vdd vddB 282.5} {vref vrefB 284.0} \
-          {n3 n3b 285.5} {dac_out vdac 287.0}}
+# ---- cross-row jogs west of vp@285 / plate@290 (AZ FETs end ~283) ----
+set JOGS {{gnd gndB 274.0} {vdd vddB 275.5} {vref vrefB 277.0} \
+          {n3 n3b 278.5} {dac_out vdac 280.0}}
 foreach j $JOGS { reg [lindex $j 0] [lindex $j 2]; reg [lindex $j 1] [lindex $j 2] }
 
 foreach n [array names TR] {

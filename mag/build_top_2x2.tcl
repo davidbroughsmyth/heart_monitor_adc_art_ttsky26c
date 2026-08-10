@@ -140,19 +140,20 @@ afe::via3 7.0 5.0
 afe::pbox met3 1.3 4.84 7.16 5.16
 afe::via3 2.0 5.0
 
-# ===== macro PDN -> stripes (DY=72 → STRAPTOP≈200) =====
-# Keep bridges BELOW dig met4 (starts 203.7): via3 pads ±0.26 need ≥0.3µm met3/met4.2.
+# ===== macro PDN -> stripes (DY=72 → STRAPTOP≈200.08) =====
+# Bridges must sit ABOVE strap-top met3 (via3@200.5 stacked on STRAPTOP → met3.2)
+# and BELOW dig met4 (203.7+): pad ±0.26 needs ≥0.3µm clear.
 set STRAPTOP [expr {$DY+128.08}]
 proc strapext {x y} { global STRAPTOP
   afe::pbox met4 [expr {$x-0.8}] [expr {$STRAPTOP-0.3}] [expr {$x+0.8}] $y }
 proc m3h {y x0 x1} { set lo [expr {min($x0,$x1)}]; set hi [expr {max($x0,$x1)}]
   afe::pbox met3 $lo [expr {$y-0.16}] $hi [expr {$y+0.16}] }
-foreach sx {61.84 86.84} { strapext $sx 200.5 ; afe::via3 $sx 200.5 }
-m3h 200.5 2.0 86.84
-afe::via3 2.0 200.5
-foreach sx {74.34 99.34} { strapext $sx 202.0 ; afe::via3 $sx 202.0 }
-m3h 202.0 5.0 99.34
-afe::via3 5.0 202.0
+foreach sx {61.84 86.84} { strapext $sx 201.2 ; afe::via3 $sx 201.2 }
+m3h 201.2 2.0 86.84
+afe::via3 2.0 201.2
+foreach sx {74.34 99.34} { strapext $sx 202.4 ; afe::via3 $sx 202.4 }
+m3h 202.4 5.0 99.34
+afe::via3 5.0 202.4
 
 # ===== digital I/O: unique-y north channel (shared-met4 east corridor shorts) =====
 array set MPX {clk 4.83 rst_n 8.05}
@@ -173,13 +174,17 @@ for {set i 0} {$i<8} {incr i} {
   set BPX(uio_out$i) [lindex $uioB $i]
   set BPX(uio_oe$i)  [lindex $oeB  $i]
 }
+# Slim dig MNY tap (a=0.18): fat via2 a=0.26 packed dig met3 into MNY↔ytr crossings.
 proc dig {net ytr2} {
   global MPX BPX DX MNY
   set mpx [expr {$DX+$MPX($net)}]
   set bpx $BPX($net)
+  set a 0.18
   afe::pbox met2 [expr {$mpx-0.14}] [expr {$MNY-0.6}] [expr {$mpx+0.14}] [expr {$MNY+0.6}]
-  afe::via2 $mpx $MNY
-  afe::pbox met3 [expr {$mpx-0.26}] [expr {$MNY-0.26}] [expr {$mpx+0.26}] [expr {$ytr2+0.26}]
+  afe::pbox met2 [expr {$mpx-$a}] [expr {$MNY-$a}] [expr {$mpx+$a}] [expr {$MNY+$a}]
+  afe::pbox via2 [expr {$mpx-$a}] [expr {$MNY-$a}] [expr {$mpx+$a}] [expr {$MNY+$a}]
+  afe::pbox met3 [expr {$mpx-$a}] [expr {$MNY-$a}] [expr {$mpx+$a}] [expr {$MNY+$a}]
+  m3v $mpx $MNY $ytr2
   afe::via3 $mpx $ytr2
   afe::m4h $ytr2 $mpx $bpx
   afe::via3 $bpx $ytr2
