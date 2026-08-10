@@ -63,27 +63,27 @@ afe::via3 25.5 0.0; afe::via2 25.5 0.0; afe::via 25.5 0.0
 afe::m1v 25.5 0.0 [T vhold]; afe::via 25.5 [T vhold]
 reg vhold 25.5
 
-# AZ MiMs far east. Plate left ≥300 (≥4µm past AZ end~296). Capm.SP.3 ≥2µm.
-# C1 14×14 @308 → 301..315; C2 10×10 @322 → 317..327; place@4 ≈332.
-afe::cap 14 14 308.0 0.0
-afe::via2 319.0 0.0
-afe::pbox met3 315.0 -0.26 319.26 0.26
-afe::via 319.0 0.0; afe::m1v 319.0 0.0 [T az1]; afe::via 319.0 [T az1]
-reg az1 319.0
-afe::m4h 0.0 292.0 302.0
-afe::via3 293.0 0.0; afe::via2 293.0 0.0; afe::via 293.0 0.0
-afe::m1v 293.0 0.0 [T vp]; afe::via 293.0 [T vp]
-reg vp 293.0
+# AZ MiMs far east. AZ ends ~308; plate left ≥310. Capm.SP.3 ≥2µm.
+# C1 12×12 @310 → 304..316; C2 8×8 @324 → 320..328; place@2.5 ≈331.
+afe::cap 12 12 310.0 0.0
+afe::via2 320.0 0.0
+afe::pbox met3 316.0 -0.26 320.26 0.26
+afe::via 320.0 0.0; afe::m1v 320.0 0.0 [T az1]; afe::via 320.0 [T az1]
+reg az1 320.0
+afe::m4h 0.0 296.0 305.0
+afe::via3 297.0 0.0; afe::via2 297.0 0.0; afe::via 297.0 0.0
+afe::m1v 297.0 0.0 [T vp]; afe::via 297.0 [T vp]
+reg vp 297.0
 
-afe::cap 10 10 322.0 0.0
+afe::cap 8 8 324.0 0.0
 afe::via2 330.0 0.0
-afe::pbox met3 326.5 -0.26 330.26 0.26
+afe::pbox met3 327.5 -0.26 330.26 0.26
 afe::via 330.0 0.0; afe::m1v 330.0 0.0 [T az2]; afe::via 330.0 [T az2]
 reg az2 330.0
-afe::m4h 0.0 312.0 318.0
-afe::via3 312.5 0.0; afe::via2 312.5 0.0; afe::via 312.5 0.0
-afe::m1v 312.5 0.0 [T vm]; afe::via 312.5 [T vm]
-reg vm 312.5
+afe::m4h 0.0 316.0 321.0
+afe::via3 316.5 0.0; afe::via2 316.5 0.0; afe::via 316.5 0.0
+afe::m1v 316.5 0.0 [T vm]; afe::via 316.5 [T vm]
+reg vm 316.5
 
 # ===== Row A: Sample/Hold =====
 set X 3.5
@@ -98,12 +98,14 @@ proc nxcmp {} { global X; set r $X; set X [expr {$X+6.5}]; return $r }
 wFET [afe::fet pfet 1.00 1.0  [nxcmp] 0.0] vdd  nbias   nbias  vdd
 wFET [afe::fet nfet 1.00 1.0  [nxcmp] 0.0] gnd  nbias   nbias  gnd
 wFET [afe::fet nfet 3.00 0.15 [nxcmp] 0.0] gnd  tail    nbias  gnd
+set X [expr {$X + 2.0}]
 wFET [afe::fet nfet 2.00 0.15 [nxcmp] 0.0] tail d1      vp     gnd
+set X [expr {$X + 2.0}]
 wFET [afe::fet nfet 2.00 0.15 [nxcmp] 0.0] tail d2      vm     gnd
-set X [expr {$X + 2.5}]
+set X [expr {$X + 3.0}]
 set Dp1 [afe::fet pfet 3.00 0.15 [nxcmp] 0.0]
 wS $Dp1 vdd; wD $Dp1 d1; afe::rgat_to_drn $Dp1; wB $Dp1 vdd
-set X [expr {$X + 2.5}]
+set X [expr {$X + 3.0}]
 wFET [afe::fet pfet 3.00 0.15 [nxcmp] 0.0] vdd  d2      d1     vdd
 wFET [afe::fet nfet 1.00 0.15 [nxcmp] 0.0] gnd  mid     d2     gnd
 wFET [afe::fet pfet 2.00 0.15 [nxcmp] 0.0] vdd  mid     d2     vdd
@@ -111,7 +113,7 @@ wFET [afe::fet nfet 0.84 0.15 [nxcmp] 0.0] gnd  cmp_out mid    gnd
 wFET [afe::fet pfet 1.68 0.15 [nxcmp] 0.0] vdd  cmp_out mid    vdd
 
 # ===== DAC bits 0..3 (3.5µm + gap before R) =====
-set X 140.0
+set X 150.0
 for {set i 0} {$i<4} {incr i} {
   wFET [afe::fet nfet 0.42 0.15 [nx] 0.0] gnd  b${i}b b$i    gnd
   wFET [afe::fet pfet 0.84 0.15 [nx] 0.0] vdd  b${i}b b$i    vdd
@@ -125,20 +127,20 @@ for {set i 0} {$i<4} {incr i} {
 wRES [afe::res 3.5 [nxgap] 0.0] n0 gnd gnd
 
 # ===== CM + AZ — clear of b3 end~249; AZ ends ~266+30=296; plate@301 =====
-set X 255.0
+set X 262.0
 wRES [afe::res 3.5 $X 0.0] vdd    vcm_h   gnd
-set X 260.0
+set X 267.0
 wRES [afe::res 0.90 $X 0.0] vcm_h  vcm_d   gnd
-set X 265.0
+set X 272.0
 wRES [afe::res 0.90 $X 0.0] vcm_d  gnd_tap gnd
-set Xstrap 268.0
+set Xstrap 275.0
 afe::via2 $Xstrap [T gnd_tap]
 afe::via2 $Xstrap [T gnd]
 set lo [expr {min([T gnd_tap],[T gnd])}]; set hi [expr {max([T gnd_tap],[T gnd])}]
 afe::pbox met3 [expr {$Xstrap-0.15}] $lo [expr {$Xstrap+0.15}] $hi
 reg gnd $Xstrap; reg gnd_tap $Xstrap
 
-set X 271.0
+set X 278.0
 wFET [afe::fet nfet 0.36 0.15 [nxaz] 0.0] az1 vcm_h sample   gnd
 wFET [afe::fet pfet 0.72 0.15 [nxaz] 0.0] az1 vcm_h sample_b vdd
 wFET [afe::fet nfet 0.36 0.15 [nxaz] 0.0] az2 vcm_d sample   gnd
@@ -172,8 +174,8 @@ wRES [afe::res 1.75 [nxgap] $YB] n9  n10     gndB
 wRES [afe::res 1.75 [nxgap] $YB] n10 dac_out gndB
 
 # Jogs between AZ (~ends 301) and plate@301 — sit on last AZ cols / west of plate.
-set JOGS {{gnd gndB 288.0} {vdd vddB 289.5} {vref vrefB 291.0} \
-          {n3 n3b 292.5} {dac_out vdac 294.0}}
+set JOGS {{gnd gndB 294.0} {vdd vddB 295.5} {vref vrefB 297.0} \
+          {n3 n3b 298.5} {dac_out vdac 300.0}}
 foreach j $JOGS { reg [lindex $j 0] [lindex $j 2]; reg [lindex $j 1] [lindex $j 2] }
 
 foreach n [array names TR] {

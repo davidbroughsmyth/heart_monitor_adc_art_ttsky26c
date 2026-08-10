@@ -55,7 +55,7 @@ proc tapvia2 {x y} {
 #      abs y ≥5 (power stripe / project area), width fits DIEAREA under art. ----
 # Place AFE slightly west to reclaim width from wider cmp / DAC pitch.
 # Place AFE west to reclaim width from wider cmp / DAC-res gaps.
-set AOX 3.5
+set AOX 2.5
 set AOY 17.0
 box ${AOX}um ${AOY}um [expr {$AOX+1}]um [expr {$AOY+1}]um
 getcell afe_analog_dense
@@ -91,22 +91,21 @@ proc sig {cx cy net ytr} {
   m3v $xt $ytr $yt
   tapvia2 $xt $yt
 }
-# Unique xt: sample &b4 share band — tap different x on each track.
-# Port x from AFEPORT VMN/VMX after cmp@6.5 + DAC@140 rebuild.
-sig 132.37 -5.5  cmp_out 58.00
-sig  10.5    3.0  sample  58.82
-sig 140.0    7.0  b0      59.64
-sig 170.4    7.5  b1      60.46
-sig 200.8    8.0  b2      61.28
-sig 231.2    8.5  b3      62.10
-sig  12.0   29.0  b4      62.92
-sig  29.2   29.5  b5      63.74
-sig  54.9   30.0  b6      64.56
-sig  80.6   30.5  b7      65.38
-sig 106.3   31.0  b8      66.20
-sig 132.0   31.5  b9      67.02
-sig 157.7   32.0  b10     67.84
-sig 183.4   32.5  b11     68.66
+# Port x from AFEPORT after cmp air-gaps rebuild.
+sig  137.37  -5.5  cmp_out  58.00
+sig   10.50   3.0  sample   58.82
+sig  150.00   7.0  b0       59.64
+sig  180.40   7.5  b1       60.46
+sig  210.80   8.0  b2       61.28
+sig  241.20   8.5  b3       62.10
+sig   12.00  29.0  b4       62.92
+sig   29.20  29.5  b5       63.74
+sig   54.90  30.0  b6       64.56
+sig   80.60  30.5  b7       65.38
+sig  106.30  31.0  b8       66.20
+sig  132.00  31.5  b9       67.02
+sig  157.70  32.0  b10      67.84
+sig  183.40  32.5  b11      68.66
 
 # ===== analog input pins: vin_ecg->ua[0]@152.26, vref->ua[1]@132.94 (south) =====
 proc ana {cx cy ydn xpin} {
@@ -177,14 +176,16 @@ for {set i 0} {$i<8} {incr i} {
   set BPX(uio_out$i) [lindex $uioB $i]
   set BPX(uio_oe$i)  [lindex $oeB  $i]
 }
-# Slim dig tap ABOVE macro north (ytap=MNY+0.55). via2@MNY sat in the dig
-# channel (y≈209) and violated met3.2 vs nearby dig ytr via3 pads.
+# Dig tap ABOVE MNY; stagger x on alternate nets; skip dig y through MNY±0.9.
 proc dig {net ytr2} {
-  global MPX BPX DX MNY
+  global MPX BPX DX MNY DIGI
   set mpx [expr {$DX+$MPX($net)}]
   set bpx $BPX($net)
-  set a 0.18
-  set ytap [expr {$MNY + 0.55}]
+  set a 0.16
+  set ytap [expr {$MNY + 0.90}]
+  # Stagger tap x so adjacent dig via pads at ytap clear met3.2
+  set ox [expr {($DIGI % 2) ? 0.40 : -0.40}]
+  set mpx [expr {$mpx + $ox}]
   afe::pbox met2 [expr {$mpx-0.14}] [expr {$MNY-0.6}] [expr {$mpx+0.14}] [expr {$ytap+$a}]
   afe::pbox met2 [expr {$mpx-$a}] [expr {$ytap-$a}] [expr {$mpx+$a}] [expr {$ytap+$a}]
   afe::pbox via2 [expr {$mpx-$a}] [expr {$ytap-$a}] [expr {$mpx+$a}] [expr {$ytap+$a}]
@@ -199,8 +200,11 @@ proc dig {net ytr2} {
 set NETS {clk rst_n uo_out0 uo_out1 uo_out2 uo_out7 uio_out0 uo_out6 uio_out1 uo_out5 \
           uio_out2 uo_out4 uio_out3 uo_out3 uio_out4 uio_out5 uio_out6 uio_out7 \
           uio_oe0 uio_oe1 uio_oe2 uio_oe3 uio_oe4 uio_oe5 uio_oe6 uio_oe7}
-set i 0
-foreach n $NETS { dig $n [expr {203.7 + 0.82*$i}] ; incr i }
+set DIGI 0
+foreach n $NETS {
+  dig $n [expr {203.5 + 0.82*$DIGI}]
+  incr DIGI
+}
 
 # ---- decorative silicon art (95×70) NE pocket above Row-B / CM / AZ ----
 set ART_X 210.0

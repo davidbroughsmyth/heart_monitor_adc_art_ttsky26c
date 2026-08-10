@@ -176,16 +176,14 @@ proc afe::res {l cx cy} {
     box 0 0 0 0
     set p [dict merge [sky130::sky130_fd_pr__res_xhigh_po_0p35_defaults] [list l $l]]
     sky130::sky130_fd_pr__res_xhigh_po_0p35_draw $p
+    # Select window must cover full drawn length (was hardcoded ±5 → clipped unit-R ≥8).
     set half [expr {$l/2.0 + 2.5}]
     box -1.5um -${half}um 1.5um ${half}um
     select area
-    if {$cy != 0} { move n ${cy}um }
+    if {$cy != 0} { move n ${cy}um } ;# n-then-e (see afe::fet note)
     if {$cx != 0} { move e ${cx}um }
     select clear
     set tvy [expr {$l/2.0 + 0.995}]
-    # Grow li around poly endcaps (helps licon.13 / SP.4 enclosure on xhigh R).
-    afe::pbox li [expr {$cx-0.14}] [expr {$cy+$tvy-0.16}] [expr {$cx+0.14}] [expr {$cy+$tvy+0.16}]
-    afe::pbox li [expr {$cx-0.14}] [expr {$cy-$tvy-0.16}] [expr {$cx+0.14}] [expr {$cy-$tvy+0.16}]
     return [list cx $cx cy $cy tvy $tvy gx [expr {$cx-0.74}]]
 }
 # Riser from a resistor terminal at (x,y0) to a met2 track (same sign, |track|>|y0|).
