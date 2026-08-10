@@ -17,8 +17,6 @@ proc assign {nets y0 dir} { global TR; set y $y0; foreach n $nets { set TR($n) $
 set PP 0.5
 set YB 26.0
 
-# HEAD-stable cores first; AZ nets APPENDED. DAC split 4+8 → shorter Row A.
-# az1/az2 = AZ-cap bottoms (SPICE n1/n2; renamed vs ladder nodes).
 set POSA {sample sample_b vhold nbias d1 d2 mid vdac \
           b0 b1 b2 b3 b0b b1b b2b b3b n0 n2 snk1 snk3 \
           vcm_h gnd_tap vp az1}
@@ -52,10 +50,9 @@ proc wRES {R na nb gnet} {
 }
 proc nx {} { global X; set r $X; set X [expr {$X+3.5}]; return $r }
 proc nxaz {} { global X; set r $X; set X [expr {$X+3.0}]; return $r }
+proc nxgap {} { global X; set X [expr {$X+1.2}]; set r $X; set X [expr {$X+3.5}]; return $r }
 
 # ===== MiMs FIRST =====
-# Chold ~1 pF — top-plate via must keep ≥1.34µm met3 clear of bot plate (capm.11).
-# Plate left≈29; land top at x=25.5 (met3 pad right≈25.76 → ~3.2µm clear).
 afe::cap 22 22 40.0 0.0
 afe::via2 54.0 0.0
 afe::pbox met3 51.0 -0.26 54.26 0.26
@@ -66,28 +63,27 @@ afe::via3 25.5 0.0; afe::via2 25.5 0.0; afe::via 25.5 0.0
 afe::m1v 25.5 0.0 [T vhold]; afe::via 25.5 [T vhold]
 reg vhold 25.5
 
-# AZ MiMs FIRST at FAR EAST (cy=0). Plate left ≥290 (≥3µm past jogs@287).
-# C1 18×18 @299 → plate 290..308; C2 10×10 @314 → plate 309..319; place@8 ≈332.
-afe::cap 18 18 299.0 0.0
-afe::via2 312.0 0.0
-afe::pbox met3 308.0 -0.26 312.26 0.26
-afe::via 312.0 0.0; afe::m1v 312.0 0.0 [T az1]; afe::via 312.0 [T az1]
-reg az1 312.0
-# Land west of plate (left@290); clear of jogs@≤280 and wide-met3 (MRW_met3.SP.2).
-afe::m4h 0.0 283.5 291.0
-afe::via3 285.0 0.0; afe::via2 285.0 0.0; afe::via 285.0 0.0
-afe::m1v 285.0 0.0 [T vp]; afe::via 285.0 [T vp]
-reg vp 285.0
+# AZ MiMs far east. Plate left ≥300 (≥4µm past AZ end~296). Capm.SP.3 ≥2µm.
+# C1 14×14 @308 → 301..315; C2 10×10 @322 → 317..327; place@4 ≈332.
+afe::cap 14 14 308.0 0.0
+afe::via2 319.0 0.0
+afe::pbox met3 315.0 -0.26 319.26 0.26
+afe::via 319.0 0.0; afe::m1v 319.0 0.0 [T az1]; afe::via 319.0 [T az1]
+reg az1 319.0
+afe::m4h 0.0 292.0 302.0
+afe::via3 293.0 0.0; afe::via2 293.0 0.0; afe::via 293.0 0.0
+afe::m1v 293.0 0.0 [T vp]; afe::via 293.0 [T vp]
+reg vp 293.0
 
-afe::cap 10 10 314.0 0.0
-afe::via2 322.0 0.0
-afe::pbox met3 318.5 -0.26 322.26 0.26
-afe::via 322.0 0.0; afe::m1v 322.0 0.0 [T az2]; afe::via 322.0 [T az2]
-reg az2 322.0
-afe::m4h 0.0 304.0 310.0
-afe::via3 304.5 0.0; afe::via2 304.5 0.0; afe::via 304.5 0.0
-afe::m1v 304.5 0.0 [T vm]; afe::via 304.5 [T vm]
-reg vm 304.5
+afe::cap 10 10 322.0 0.0
+afe::via2 330.0 0.0
+afe::pbox met3 326.5 -0.26 330.26 0.26
+afe::via 330.0 0.0; afe::m1v 330.0 0.0 [T az2]; afe::via 330.0 [T az2]
+reg az2 330.0
+afe::m4h 0.0 312.0 318.0
+afe::via3 312.5 0.0; afe::via2 312.5 0.0; afe::via 312.5 0.0
+afe::m1v 312.5 0.0 [T vm]; afe::via 312.5 [T vm]
+reg vm 312.5
 
 # ===== Row A: Sample/Hold =====
 set X 3.5
@@ -96,24 +92,26 @@ wFET [afe::fet pfet 0.84 0.15 [nx] 0.0] vdd sample_b sample   vdd
 wFET [afe::fet nfet 1.00 0.15 [nx] 0.0] vin vhold   sample    gnd
 wFET [afe::fet pfet 2.00 0.15 [nx] 0.0] vin vhold   sample_b  vdd
 
-# ===== Row A: Comparator (5.5µm pitch — met1.2 vs gate pads) =====
-set X 60.0
-proc nxcmp {} { global X; set r $X; set X [expr {$X+5.5}]; return $r }
-wFET [afe::fet pfet 0.84 1.0  [nxcmp] 0.0] vdd  nbias   nbias  vdd
-wFET [afe::fet nfet 0.84 1.0  [nxcmp] 0.0] gnd  nbias   nbias  gnd
+# ===== Comparator: 6.5µm + Dp1 gaps (met1.2) =====
+set X 62.0
+proc nxcmp {} { global X; set r $X; set X [expr {$X+6.5}]; return $r }
+wFET [afe::fet pfet 1.00 1.0  [nxcmp] 0.0] vdd  nbias   nbias  vdd
+wFET [afe::fet nfet 1.00 1.0  [nxcmp] 0.0] gnd  nbias   nbias  gnd
 wFET [afe::fet nfet 3.00 0.15 [nxcmp] 0.0] gnd  tail    nbias  gnd
 wFET [afe::fet nfet 2.00 0.15 [nxcmp] 0.0] tail d1      vp     gnd
 wFET [afe::fet nfet 2.00 0.15 [nxcmp] 0.0] tail d2      vm     gnd
+set X [expr {$X + 2.5}]
 set Dp1 [afe::fet pfet 3.00 0.15 [nxcmp] 0.0]
 wS $Dp1 vdd; wD $Dp1 d1; afe::rgat_to_drn $Dp1; wB $Dp1 vdd
+set X [expr {$X + 2.5}]
 wFET [afe::fet pfet 3.00 0.15 [nxcmp] 0.0] vdd  d2      d1     vdd
 wFET [afe::fet nfet 1.00 0.15 [nxcmp] 0.0] gnd  mid     d2     gnd
 wFET [afe::fet pfet 2.00 0.15 [nxcmp] 0.0] vdd  mid     d2     vdd
 wFET [afe::fet nfet 0.84 0.15 [nxcmp] 0.0] gnd  cmp_out mid    gnd
 wFET [afe::fet pfet 1.68 0.15 [nxcmp] 0.0] vdd  cmp_out mid    vdd
 
-# ===== Row A: DAC bits 0..3 (after wider cmp column) =====
-set X 120.0
+# ===== DAC bits 0..3 (3.5µm + gap before R) =====
+set X 140.0
 for {set i 0} {$i<4} {incr i} {
   wFET [afe::fet nfet 0.42 0.15 [nx] 0.0] gnd  b${i}b b$i    gnd
   wFET [afe::fet pfet 0.84 0.15 [nx] 0.0] vdd  b${i}b b$i    vdd
@@ -121,26 +119,26 @@ for {set i 0} {$i<4} {incr i} {
   wFET [afe::fet pfet 2.00 0.15 [nx] 0.0] vref snk$i b${i}b  vdd
   wFET [afe::fet nfet 1.00 0.15 [nx] 0.0] gnd  snk$i b${i}b  gnd
   wFET [afe::fet pfet 2.00 0.15 [nx] 0.0] gnd  snk$i b$i     vdd
-  wRES [afe::res 3.5 [nx] 0.0] snk$i n$i gnd
-  if {$i <= 2} { wRES [afe::res 1.75 [nx] 0.0] n$i n[expr {$i+1}] gnd }
+  wRES [afe::res 3.5 [nxgap] 0.0] snk$i n$i gnd
+  if {$i <= 2} { wRES [afe::res 1.75 [nxgap] 0.0] n$i n[expr {$i+1}] gnd }
 }
-wRES [afe::res 3.5 [nx] 0.0] n0 gnd gnd
+wRES [afe::res 3.5 [nxgap] 0.0] n0 gnd gnd
 
-# ===== Row A: CM + AZ — east of DAC-A (~ends x≈232) =====
-set X 236.0
+# ===== CM + AZ — clear of b3 end~249; AZ ends ~266+30=296; plate@301 =====
+set X 255.0
 wRES [afe::res 3.5 $X 0.0] vdd    vcm_h   gnd
-set X 241.0
+set X 260.0
 wRES [afe::res 0.90 $X 0.0] vcm_h  vcm_d   gnd
-set X 246.0
+set X 265.0
 wRES [afe::res 0.90 $X 0.0] vcm_d  gnd_tap gnd
-set Xstrap 250.0
+set Xstrap 268.0
 afe::via2 $Xstrap [T gnd_tap]
 afe::via2 $Xstrap [T gnd]
 set lo [expr {min([T gnd_tap],[T gnd])}]; set hi [expr {max([T gnd_tap],[T gnd])}]
 afe::pbox met3 [expr {$Xstrap-0.15}] $lo [expr {$Xstrap+0.15}] $hi
 reg gnd $Xstrap; reg gnd_tap $Xstrap
 
-set X 253.0
+set X 271.0
 wFET [afe::fet nfet 0.36 0.15 [nxaz] 0.0] az1 vcm_h sample   gnd
 wFET [afe::fet pfet 0.72 0.15 [nxaz] 0.0] az1 vcm_h sample_b vdd
 wFET [afe::fet nfet 0.36 0.15 [nxaz] 0.0] az2 vcm_d sample   gnd
@@ -152,7 +150,7 @@ wFET [afe::fet pfet 0.72 0.15 [nxaz] 0.0] az1 vhold sample   vdd
 wFET [afe::fet nfet 0.36 0.15 [nxaz] 0.0] az2 vdac  sample_b gnd
 wFET [afe::fet pfet 0.72 0.15 [nxaz] 0.0] az2 vdac  sample   vdd
 
-# ===== Row B: DAC bits 4..11 (under art pocket when placed) =====
+# ===== Row B DAC 4..11 =====
 set X 3.5
 for {set i 4} {$i<12} {incr i} {
   wFET [afe::fet nfet 0.42 0.15 [nx] $YB] gndB  b${i}b b$i    gndB
@@ -162,20 +160,20 @@ for {set i 4} {$i<12} {incr i} {
   wFET [afe::fet nfet 1.00 0.15 [nx] $YB] gndB  snk$i b${i}b  gndB
   wFET [afe::fet pfet 2.00 0.15 [nx] $YB] gndB  snk$i b$i     vddB
   set nodei [expr {$i<11 ? "n$i" : "dac_out"}]
-  wRES [afe::res 3.5 [nx] $YB] snk$i $nodei gndB
+  wRES [afe::res 3.5 [nxgap] $YB] snk$i $nodei gndB
 }
-wRES [afe::res 1.75 [nx] $YB] n3b n4      gndB
-wRES [afe::res 1.75 [nx] $YB] n4  n5      gndB
-wRES [afe::res 1.75 [nx] $YB] n5  n6      gndB
-wRES [afe::res 1.75 [nx] $YB] n6  n7      gndB
-wRES [afe::res 1.75 [nx] $YB] n7  n8      gndB
-wRES [afe::res 1.75 [nx] $YB] n8  n9      gndB
-wRES [afe::res 1.75 [nx] $YB] n9  n10     gndB
-wRES [afe::res 1.75 [nx] $YB] n10 dac_out gndB
+wRES [afe::res 1.75 [nxgap] $YB] n3b n4      gndB
+wRES [afe::res 1.75 [nxgap] $YB] n4  n5      gndB
+wRES [afe::res 1.75 [nxgap] $YB] n5  n6      gndB
+wRES [afe::res 1.75 [nxgap] $YB] n6  n7      gndB
+wRES [afe::res 1.75 [nxgap] $YB] n7  n8      gndB
+wRES [afe::res 1.75 [nxgap] $YB] n8  n9      gndB
+wRES [afe::res 1.75 [nxgap] $YB] n9  n10     gndB
+wRES [afe::res 1.75 [nxgap] $YB] n10 dac_out gndB
 
-# ---- cross-row jogs west of vp@285 / plate@290 (AZ FETs end ~283) ----
-set JOGS {{gnd gndB 274.0} {vdd vddB 275.5} {vref vrefB 277.0} \
-          {n3 n3b 278.5} {dac_out vdac 280.0}}
+# Jogs between AZ (~ends 301) and plate@301 — sit on last AZ cols / west of plate.
+set JOGS {{gnd gndB 288.0} {vdd vddB 289.5} {vref vrefB 291.0} \
+          {n3 n3b 292.5} {dac_out vdac 294.0}}
 foreach j $JOGS { reg [lindex $j 0] [lindex $j 2]; reg [lindex $j 1] [lindex $j 2] }
 
 foreach n [array names TR] {

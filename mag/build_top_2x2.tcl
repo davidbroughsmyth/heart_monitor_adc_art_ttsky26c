@@ -53,7 +53,9 @@ proc tapvia2 {x y} {
 
 # ---- place dense AFE: local bbox ~(-1,-11)‥(270,41). Place high enough that
 #      abs y ≥5 (power stripe / project area), width fits DIEAREA under art. ----
-set AOX 8.0
+# Place AFE slightly west to reclaim width from wider cmp / DAC pitch.
+# Place AFE west to reclaim width from wider cmp / DAC-res gaps.
+set AOX 3.5
 set AOY 17.0
 box ${AOX}um ${AOY}um [expr {$AOX+1}]um [expr {$AOY+1}]um
 getcell afe_analog_dense
@@ -89,21 +91,22 @@ proc sig {cx cy net ytr} {
   m3v $xt $ytr $yt
   tapvia2 $xt $yt
 }
-# Unique xt: sample & b4 share VMN=3.5 — tap different x on each track.
-sig 112.62  -5.5  cmp_out 58.00
+# Unique xt: sample &b4 share band — tap different x on each track.
+# Port x from AFEPORT VMN/VMX after cmp@6.5 + DAC@140 rebuild.
+sig 132.37 -5.5  cmp_out 58.00
 sig  10.5    3.0  sample  58.82
-sig 120.0    7.0  b0      59.64
-sig 148.0    7.5  b1      60.46
-sig 176.0    8.0  b2      61.28
-sig 204.0    8.5  b3      62.10
+sig 140.0    7.0  b0      59.64
+sig 170.4    7.5  b1      60.46
+sig 200.8    8.0  b2      61.28
+sig 231.2    8.5  b3      62.10
 sig  12.0   29.0  b4      62.92
-sig  28.0   29.5  b5      63.74
-sig  52.5   30.0  b6      64.56
-sig  77.0   30.5  b7      65.38
-sig 101.5   31.0  b8      66.20
-sig 126.0   31.5  b9      67.02
-sig 150.5   32.0  b10     67.84
-sig 175.0   32.5  b11     68.66
+sig  29.2   29.5  b5      63.74
+sig  54.9   30.0  b6      64.56
+sig  80.6   30.5  b7      65.38
+sig 106.3   31.0  b8      66.20
+sig 132.0   31.5  b9      67.02
+sig 157.7   32.0  b10     67.84
+sig 183.4   32.5  b11     68.66
 
 # ===== analog input pins: vin_ecg->ua[0]@152.26, vref->ua[1]@132.94 (south) =====
 proc ana {cx cy ydn xpin} {
@@ -174,17 +177,19 @@ for {set i 0} {$i<8} {incr i} {
   set BPX(uio_out$i) [lindex $uioB $i]
   set BPX(uio_oe$i)  [lindex $oeB  $i]
 }
-# Slim dig MNY tap (a=0.18): fat via2 a=0.26 packed dig met3 into MNY↔ytr crossings.
+# Slim dig tap ABOVE macro north (ytap=MNY+0.55). via2@MNY sat in the dig
+# channel (y≈209) and violated met3.2 vs nearby dig ytr via3 pads.
 proc dig {net ytr2} {
   global MPX BPX DX MNY
   set mpx [expr {$DX+$MPX($net)}]
   set bpx $BPX($net)
   set a 0.18
-  afe::pbox met2 [expr {$mpx-0.14}] [expr {$MNY-0.6}] [expr {$mpx+0.14}] [expr {$MNY+0.6}]
-  afe::pbox met2 [expr {$mpx-$a}] [expr {$MNY-$a}] [expr {$mpx+$a}] [expr {$MNY+$a}]
-  afe::pbox via2 [expr {$mpx-$a}] [expr {$MNY-$a}] [expr {$mpx+$a}] [expr {$MNY+$a}]
-  afe::pbox met3 [expr {$mpx-$a}] [expr {$MNY-$a}] [expr {$mpx+$a}] [expr {$MNY+$a}]
-  m3v $mpx $MNY $ytr2
+  set ytap [expr {$MNY + 0.55}]
+  afe::pbox met2 [expr {$mpx-0.14}] [expr {$MNY-0.6}] [expr {$mpx+0.14}] [expr {$ytap+$a}]
+  afe::pbox met2 [expr {$mpx-$a}] [expr {$ytap-$a}] [expr {$mpx+$a}] [expr {$ytap+$a}]
+  afe::pbox via2 [expr {$mpx-$a}] [expr {$ytap-$a}] [expr {$mpx+$a}] [expr {$ytap+$a}]
+  afe::pbox met3 [expr {$mpx-$a}] [expr {$ytap-$a}] [expr {$mpx+$a}] [expr {$ytap+$a}]
+  m3v $mpx $ytap $ytr2
   afe::via3 $mpx $ytr2
   afe::m4h $ytr2 $mpx $bpx
   afe::via3 $bpx $ytr2
