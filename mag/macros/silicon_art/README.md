@@ -5,8 +5,8 @@
 
 | | |
 |---|---|
-| Cell | `silicon_art` — **185 × 130 µm** |
-| Placement | `(140, 68)` via `mag/build_top_2x2.tcl` |
+| Cell | `silicon_art` — **95 × 70 µm** |
+| Placement | `(210, 130)` via `mag/build_top_2x2.tcl` |
 | Layers | art = met4.drawing; `prBoundary` 235/4 |
 | Effect on SAR | none (floating metal, no pins / power) |
 

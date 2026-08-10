@@ -26,10 +26,11 @@ Demoboard wiring: [INTEGRATION.md](INTEGRATION.md)
 
 ## Features
 
-- Binary-search SAR with sample/hold, 12-bit R-2R DAC, and comparator interface
+- Binary-search SAR with ~1 pF S/H, unit R-2R DAC, and autozeroed comparator
+- Mid-biased ECG use (baseline ~2048, R-peaks ≥2200); high-FS railing deferred
 - Digital bus matches SNN ADC consumer (`uo` / `uio` + `sample_en`)
 - RTL sim path via pin vin proxy + behavioral comparator (no SPICE required)
-- Silicon path: Magic AFE + OpenLane-hardened `sar_digital` on TT analog template
+- Silicon path: Magic AFE + OpenLane-hardened `sar_digital` on TT analog 2×2 template
 - Decorative met4 silicon art (cats / hearts / `DBS`) — non-functional
 
 ## Block diagram
@@ -70,8 +71,8 @@ Non-functional met4 doodle in the free space right of `sar_digital`:
 
 | | |
 |---|---|
-| Cell | `silicon_art` — 185 × 130 µm |
-| Place | `(140, 68)` via `mag/build_top_2x2.tcl` |
+| Cell | `silicon_art` — **95 × 70 µm** |
+| Place | `(210, 130)` via `mag/build_top_2x2.tcl` |
 | Motif | Cat faces (whiskers, cute inverted-triangle nose hole, U-mouth) + hearts + `DBS` |
 | Electrical | Floating metal — **no** pins, power, or SAR impact (`ua` / `uo` / `uio` unchanged) |
 
@@ -81,7 +82,10 @@ Preview: [`mag/macros/silicon_art/silicon_art.svg`](../mag/macros/silicon_art/si
 **Digital sim:** `{uio_in[7:5], ui_in} << 1` (even codes 0…4094) with
 `-DDIGITAL_CMP_MODEL` and [`analog_frontend_stub.v`](../src/analog_frontend_stub.v).
 
-Target ECG mapping (after external gain): R-peaks **≥ 2200** for the SNN peak threshold.
+Target ECG mapping (after external gain): mid-scale baseline (~2048) and R-peaks
+**≥ 2200** for the SNN peak threshold. Sim metrics (B1 lockstep): mid-band
+~±13…14 LSB raw error; endpoint INL ~14…20 LSB — see [DATASHEET.md](DATASHEET.md)
+and [`analog/README.md`](../analog/README.md).
 
 ## Pinout
 

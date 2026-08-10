@@ -18,7 +18,9 @@ OUT = Path(__file__).resolve().parent
 
 ART_LAYER, ART_DT = 71, 20
 BOUND_LAYER, BOUND_DT = 235, 4
-WIDTH, HEIGHT = 185.0, 130.0
+# Sized for the remaining east pocket after the denser/taller AFE overshoot
+# and east dig corridor (was 185×130).
+WIDTH, HEIGHT = 95.0, 70.0
 GRID = 0.005  # sky130 manufacturing grid (µm)
 
 
@@ -205,18 +207,18 @@ def main() -> None:
         layer=BOUND_LAYER, datatype=BOUND_DT,
     ))
 
-    # 2×3 icons (~48 µm) — slight shrink so cat whiskers clear neighbor hearts
-    s = 48.0
-    sig_h = 22.0
-    usable_h = HEIGHT - sig_h - 6.0
+    # Compact 2×2 icons + signature to fit the smaller pocket
+    s = 26.0
+    sig_h = 14.0
+    usable_h = HEIGHT - sig_h - 4.0
     gap_y = snap((usable_h - 2 * s) / 3.0)
-    gap_x = snap((WIDTH - 3 * s) / 4.0)
-    top_y = snap(HEIGHT - 4.0 - s)
-    mid_y = snap(4.0 + sig_h + gap_y)
+    gap_x = snap((WIDTH - 2 * s) / 3.0)
+    top_y = snap(HEIGHT - 3.0 - s)
+    mid_y = snap(3.0 + sig_h + gap_y)
 
     icons = [
-        (0, 0, cat_face), (1, 0, heart), (2, 0, cat_face),
-        (0, 1, heart), (1, 1, cat_face), (2, 1, heart),
+        (0, 0, cat_face), (1, 0, heart),
+        (0, 1, heart), (1, 1, cat_face),
     ]
     for col, row, fn in icons:
         ox = snap(gap_x + col * (s + gap_x))
@@ -224,10 +226,10 @@ def main() -> None:
         merge_add(cell, fn(ox, oy, s))
 
     # DBS signature centered on the bottom band
-    lh = 16.0
+    lh = 10.0
     total_sig = snap(2.86 * lh)
     sx = snap((WIDTH - total_sig) / 2.0)
-    sy = 5.0
+    sy = 3.0
     merge_add(cell, letter_dbs(sx, sy, lh))
 
     lib.write_gds(OUT / f"{CELL}.gds")

@@ -79,11 +79,11 @@ Done ✓ / remaining before trusting silicon / shuttle:
    DAC bus, all digital I/O to the boundary, and — critically — `sar_digital`'s
    `VPWR`→`VDPWR` / `VGND`→`VGND` (the macro is now **powered**; the previously
    floating `VPWR` net is gone). `info.yaml` `tiles` is `2x2`.
-7. ✓ **Decorative silicon art:** `mag/macros/silicon_art` (185×130 µm met4 cats /
-   hearts + `DBS`) placed at `(140, 68)` to the right of `sar_digital` by
+7. ✓ **Decorative silicon art:** `mag/macros/silicon_art` (**95×70 µm** met4 cats /
+   hearts + `DBS`) placed at `(210, 130)` in the NE pocket by
    `build_top_2x2.tcl`. Floating metal only — no pins / power / SAR impact.
-   TT precheck (Magic + KLayout, including offgrid) is green with art included.
-   Demoboard wiring and HIL scripts are unchanged vs the pristine ADC.
+   Re-run TT precheck after GDS refresh. Demoboard wiring and HIL scripts are
+   unchanged vs the pristine ADC.
 
 Lab stimulus: AWG / Analog Discovery into `ua[0]` (0…Vref) — [USER_MANUAL.md](USER_MANUAL.md) §3.4.
 

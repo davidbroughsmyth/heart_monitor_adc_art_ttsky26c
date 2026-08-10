@@ -128,7 +128,12 @@ Values are **design targets** pending silicon characterization.
 | ECG R-peak target | — | after ext. gain | 2200 | — | — | LSB |
 | Analog pins used | — | info.yaml | — | 2 | — | — |
 
-INL/DNL, SNR, and power are **TBD** until post-layout / silicon measurement.
+INL/DNL (full code), SNR, and power remain TBD for shuttle. **Sim (B1 lockstep,
+1.5 µs settle, tt):** endpoint **offset ≈ 0…+3 LSB**, endpoint **INL ≈ 14…20 LSB**
+(does not meet a hard ≤8 LSB full-scale gate). In the intended **ECG mid-band**
+(baseline ~2048, R-peaks ≥2200) raw errors are typically **~±13…14 LSB**. Codes
+≳¾ FS can rail to 4095 (AZ top-plate boost); keep the external front-end
+mid-biased so peaks stay in-band.
 
 ---
 
@@ -138,9 +143,15 @@ INL/DNL, SNR, and power are **TBD** until post-layout / silicon measurement.
 |---|---|---|---|---|---|
 | Clock period | tCLK | — | 20 | — | ns |
 | Convert interval | tS | — | 2.0 | — | ms |
-| SAR latency | tSAR | 12 | — | 20 | clk |
+| SAR latency | tSAR | ~120 | — | ~160 | clk |
+| Bit settle | tSETTLE | — | 8 | — | clk |
 | sample_en width | tSE | — | 4 | — | clk |
 | sample_en to next convert | — | — | ≫ tSAR | — | clk |
+| AZ / track DAC code | — | while `sample=1` | — | midscale `12'h800` | — | LSB |
+
+`SETTLE_CYCLES=8` (default in `sar_fsm.v`) waits 160 ns @ 50 MHz after each
+`dac_bits` update before sampling `cmp_out`. During idle/track the FSM holds
+**`dac_bits = 12'h800`** so AZ reconnect is midscale-referenced.
 
 ### Timing Waveform (one conversion)
 
@@ -152,13 +163,13 @@ sequenceDiagram
   participant Bus as adc_bus
 
   Rate->>Sar: convert_strobe
-  Note over Sar: sample hold
+  Note over Sar: sample hold (AZ opens)
   loop Bits 11 to 0
-    Sar->>Sar: dac_trial cmp
+    Sar->>Sar: dac_trial settle SETTLE_CYCLES then cmp
   end
   Sar->>Bus: adc_out
   Sar->>Bus: sample_en high 4 clocks
-  Note over Sar: return to track
+  Note over Sar: return to track + AZ
 ```
 
 ---
@@ -168,19 +179,21 @@ sequenceDiagram
 **Rate divider.** Divides `clk` to assert `convert_strobe` every 100000 cycles (500 SPS).
 
 **SAR FSM.** On strobe: hold input, walk bits 11→0 comparing held vin to the DAC trial
-code, assemble the 12-bit result, then assert `sample_en` for four clocks.
+code (with multi-cycle DAC settle), assemble the 12-bit result, then assert `sample_en` for four clocks.
 
-**Analog front-end.** Sample/hold on `vin_ecg`, **12-bit R-2R ladder DAC** (per-bit
-inverter + TG switches selecting `vref`/`gnd`) producing `vdac`, and a comparator
-driving `cmp_out` into the FSM. Schematic SPICE: `analog/`; connected real-device
-Magic layout `mag/afe_analog` is netgen-LVS-clean vs `analog/sky130/sar_afe.spice`
-(a 2-row folded variant `mag/afe_analog_folded`, 253×78 µm, is also LVS-clean). The
-**dense** variant `mag/afe_analog_dense` (253×44 µm, same netlist) is placed and
-routed to the `sar_digital` macro in the **2×2** top (`mag/build_top_2x2.tcl`):
-DRC-clean (benign `met1.6` only) with extraction-verified AFE↔macro connectivity.
-The free pocket **east of the macro** holds non-functional met4 **`silicon_art`**
-(cats / hearts / `DBS`, 185×130 µm at `(140, 68)`) — decorative only; pinout and
-electrical behavior match the pristine ADC.
+**Analog front-end.** Sample/hold (~**1 pF** MiM) on `vin_ecg`, **12-bit unit R-2R
+ladder DAC** (true 2R=2×R, TG W=8/16, extracted unit `l≈9.08`) producing `vdac`,
+and an **autozeroed** comparator (AZ while `sample=1`; asymmetric low CM + MiM
+C1/C2=24/10; midscale DAC during track) driving `cmp_out` into the FSM.
+Schematic SPICE: `analog/`; Magic `mag/afe_analog_dense` placed in the **2×2** top
+(`mag/build_top_2x2.tcl`): dig I/O via an **east corridor**, raised `sar_digital`
+(re-hardened with south analog pins + midscale-AZ FSM), DRC checked after GDS build.
+The NE pocket holds non-functional met4 **`silicon_art`** (cats / hearts / `DBS`,
+**95×70 µm** at `(210, 130)`) — decorative only.
+
+**Accuracy (sim-verified, ECG use).** B1 lockstep is **monotonic** in-band with
+**~0 LSB endpoint offset** and **~14 LSB** residual INL bowl; high-FS railing is
+outside the mid-biased ECG window. Shuttle silicon still needs lab characterization.
 
 **Simulation mode.** With `-DDIGITAL_CMP_MODEL`, comparison uses the digital vin proxy;
 `analog_frontend_stub` stands in for the AFE.
@@ -188,7 +201,6 @@ electrical behavior match the pristine ADC.
 See [ARCHITECTURE.md](ARCHITECTURE.md) for block diagrams, the detailed
 [logical circuit (AFE + SAR digital)](ARCHITECTURE.md#logical-circuit-afe--sar-digital),
 and layout notes.
-
 ---
 
 ## Typical Application

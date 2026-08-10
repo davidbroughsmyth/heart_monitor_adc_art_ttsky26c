@@ -39,14 +39,19 @@ proc afe::fet {type w l cx cy} {
     box 0 0 0 0
     set p [dict merge [sky130::${dev}_defaults] [list w $w l $l nf 1]]
     sky130::${dev}_draw $p
-    box -1.6um -3.2um 1.6um 3.2um
+    # Select window MUST cover full width (was hardcoded ±1.6 → wide TGs left
+    # orphan paint at the origin and shorted the AFE).
+    set hw [expr {$w/2.0 + 1.2}]
+    set hl [expr {max(3.2, $w/2.0 + 1.5)}]
+    box -${hw}um -${hl}um ${hw}um ${hl}um
     select area
     # Move VERTICALLY first (to the empty x=0 column), THEN horizontally. Doing
     # e-then-n would park the device at the intermediate point (cx,0); in a
     # multi-row layout another row's device already sits there, so the tiles
     # merge and the second move drags the neighbour's markers away (dropping its
     # nmos/pmos recognition -> device disappears). x=0 is always empty, so
-    # n-then-e never overlaps anything.
+    # n-then-e never overlaps anything — but only if origin±hw is empty of
+    # other cells (place large MiMs before FETs; keep pitch > W+margin).
     if {$cy != 0} { move n ${cy}um }
     if {$cx != 0} { move e ${cx}um }
     select clear
@@ -84,13 +89,16 @@ proc afe::fet {type w l cx cy} {
 # Draw a MiM cap (cap_mim_m3_1) centered at (cx,cy). Bottom plate = met3,
 # top plate = met4/capm. Returns {bot {x y} top {x y}} access points.
 proc afe::cap {w l cx cy} {
+    # gencell _draw paints at the origin (ignores box). Select MUST not cover
+    # any existing devices — call this only onto a clear cell, or with
+    # origin±(w/2+1) empty. Prefer placing MiMs before FETs in the cell.
     box 0 0 0 0
     set p [dict merge [sky130::sky130_fd_pr__cap_mim_m3_1_defaults] [list w $w l $l]]
     sky130::sky130_fd_pr__cap_mim_m3_1_draw $p
     set hw [expr {$w/2.0 + 1.0}]
     box -${hw}um -${hw}um ${hw}um ${hw}um
     select area
-    if {$cy != 0} { move n ${cy}um } ;# n-then-e (see afe::fet note)
+    if {$cy != 0} { move n ${cy}um }
     if {$cx != 0} { move e ${cx}um }
     select clear
     return [list bot [list $cx $cy] top [list $cx $cy]]
@@ -168,7 +176,9 @@ proc afe::res {l cx cy} {
     box 0 0 0 0
     set p [dict merge [sky130::sky130_fd_pr__res_xhigh_po_0p35_defaults] [list l $l]]
     sky130::sky130_fd_pr__res_xhigh_po_0p35_draw $p
-    box -1um -5um 1um 5um
+    # Select window must cover full drawn length (was hardcoded ±5 → clipped unit-R ≥8).
+    set half [expr {$l/2.0 + 2.5}]
+    box -1.5um -${half}um 1.5um ${half}um
     select area
     if {$cy != 0} { move n ${cy}um } ;# n-then-e (see afe::fet note)
     if {$cx != 0} { move e ${cx}um }
