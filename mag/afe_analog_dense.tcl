@@ -98,14 +98,14 @@ proc nxcmp {} { global X; set r $X; set X [expr {$X+6.5}]; return $r }
 wFET [afe::fet pfet 1.00 1.0  [nxcmp] 0.0] vdd  nbias   nbias  vdd
 wFET [afe::fet nfet 1.00 1.0  [nxcmp] 0.0] gnd  nbias   nbias  gnd
 wFET [afe::fet nfet 3.00 0.15 [nxcmp] 0.0] gnd  tail    nbias  gnd
-set X [expr {$X + 2.0}]
+set X [expr {$X + 2.5}]
 wFET [afe::fet nfet 2.00 0.15 [nxcmp] 0.0] tail d1      vp     gnd
-set X [expr {$X + 2.0}]
+set X [expr {$X + 2.5}]
 wFET [afe::fet nfet 2.00 0.15 [nxcmp] 0.0] tail d2      vm     gnd
-set X [expr {$X + 3.0}]
+set X [expr {$X + 4.0}]
 set Dp1 [afe::fet pfet 3.00 0.15 [nxcmp] 0.0]
 wS $Dp1 vdd; wD $Dp1 d1; afe::rgat_to_drn $Dp1; wB $Dp1 vdd
-set X [expr {$X + 3.0}]
+set X [expr {$X + 4.0}]
 wFET [afe::fet pfet 3.00 0.15 [nxcmp] 0.0] vdd  d2      d1     vdd
 wFET [afe::fet nfet 1.00 0.15 [nxcmp] 0.0] gnd  mid     d2     gnd
 wFET [afe::fet pfet 2.00 0.15 [nxcmp] 0.0] vdd  mid     d2     vdd
@@ -127,12 +127,13 @@ for {set i 0} {$i<4} {incr i} {
 wRES [afe::res 3.5 [nxgap] 0.0] n0 gnd gnd
 
 # ===== CM + AZ — clear of b3 end~249; AZ ends ~266+30=296; plate@301 =====
+# Mid/bot L=3.5 (not 0.90): kill FEOL licon storm; same X as e066 (extract-clean).
 set X 262.0
 wRES [afe::res 3.5 $X 0.0] vdd    vcm_h   gnd
 set X 267.0
-wRES [afe::res 0.90 $X 0.0] vcm_h  vcm_d   gnd
+wRES [afe::res 3.5 $X 0.0] vcm_h  vcm_d   gnd
 set X 272.0
-wRES [afe::res 0.90 $X 0.0] vcm_d  gnd_tap gnd
+wRES [afe::res 3.5 $X 0.0] vcm_d  gnd_tap gnd
 set Xstrap 275.0
 afe::via2 $Xstrap [T gnd_tap]
 afe::via2 $Xstrap [T gnd]

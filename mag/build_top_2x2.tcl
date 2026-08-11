@@ -92,7 +92,7 @@ proc sig {cx cy net ytr} {
   tapvia2 $xt $yt
 }
 # Port x from AFEPORT after cmp air-gaps rebuild.
-sig  137.37  -5.5  cmp_out  58.00
+sig  140.37  -5.5  cmp_out  58.00
 sig   10.50   3.0  sample   58.82
 sig  150.00   7.0  b0       59.64
 sig  180.40   7.5  b1       60.46
