@@ -51,11 +51,9 @@ proc tapvia2 {x y} {
   afe::pbox met3 [expr {$x-0.26}] [expr {$y-0.26}] [expr {$x+0.26}] [expr {$y+0.26}]
 }
 
-# ---- place dense AFE: local bbox ~(-1,-11)‥(270,41). Place high enough that
-#      abs y ≥5 (power stripe / project area), width fits DIEAREA under art. ----
-# Place AFE slightly west to reclaim width from wider cmp / DAC pitch.
-# Place AFE west to reclaim width from wider cmp / DAC-res gaps.
-set AOX 2.5
+# ---- place dense AFE off left PDN; AZ MiMs on Row B under ART.
+# AOX=10 clears VDPWR/VGND; east margin ~20µm after MiM fold.
+set AOX 10.0
 set AOY 17.0
 box ${AOX}um ${AOY}um [expr {$AOX+1}]um [expr {$AOY+1}]um
 getcell afe_analog_dense
@@ -201,7 +199,7 @@ set NETS {clk rst_n uo_out0 uo_out1 uo_out2 uo_out7 uio_out0 uo_out6 uio_out1 uo
 set i 0
 foreach n $NETS { dig $n [expr {203.7 + 0.82*$i}] ; incr i }
 
-# ---- decorative silicon art (95×70) NE pocket above Row-B / CM / AZ ----
+# ---- decorative silicon art (95×70) NE pocket above Row-B AZ MiMs ----
 set ART_X 210.0
 set ART_Y 130.0
 gds read macros/silicon_art/silicon_art.gds

@@ -1,12 +1,14 @@
 # afe_analog_dense.tcl — S/H (~1 pF) + AZ comparator + 12-bit R-2R DAC
-# Folded for 2×2 DIEAREA: Row A = S/H + cmp + DAC bits 0..3 (~narrow under dig);
-# Row B = DAC bits 4..11 + CM divider + AZ switches (extends under NE art pocket).
+# Folded for 2×2 DIEAREA:
+#   Row A (cy=0)  = S/H + cmp + DAC 0..3 + CM + AZ FETs
+#   Row B (cy=YB) = DAC 4..11 + AZ MiMs under NE ART pocket (east of DAC-B)
 #
 # Layout rules (AZ LVS):
 #   - APPEND new track names at end of POSA/NEGA (never insert mid-list).
 #   - Place large MiMs FIRST, clear of later FET/res select windows.
 #   - Every wRES needs one POS + one NEG end; use POS gnd_tap + met3 strap.
 #   - Keep CM/AZ X clear of DAC select windows; never tall-m1v rail straps.
+#   - Never put AZ FETs on Row B under Row-A X columns (m1v punches → shorts).
 #
 source afe_lib.tcl
 set CELL afe_analog_dense
@@ -63,27 +65,28 @@ afe::via3 25.5 0.0; afe::via2 25.5 0.0; afe::via 25.5 0.0
 afe::m1v 25.5 0.0 [T vhold]; afe::via 25.5 [T vhold]
 reg vhold 25.5
 
-# AZ MiMs far east. DIE local east ≤~332 @AOX=2.5. Capm.SP.3 ≥2µm.
-# C1 12×12 @314 → 308..320; C2 8×8 @326 → 322..330; via≈330.
-afe::cap 12 12 314.0 0.0
-afe::via2 324.0 0.0
-afe::pbox met3 320.0 -0.26 324.26 0.26
-afe::via 324.0 0.0; afe::m1v 324.0 0.0 [T az1]; afe::via 324.0 [T az1]
-reg az1 324.0
-afe::m4h 0.0 302.0 307.0
-afe::via3 303.0 0.0; afe::via2 303.0 0.0; afe::via 303.0 0.0
-afe::m1v 303.0 0.0 [T vp]; afe::via 303.0 [T vp]
-reg vp 303.0
+# AZ MiMs on Row B under ART pocket (local X~200–295 @AOX=10).
+# East of Row-B DAC (~227); Capm.SP.3 ≥2µm. Keeps Row-A free of far-east plates.
+# C1 12×12 @248 → 242..254; C2 8×8 @260 → 256..264; via≈264.
+afe::cap 12 12 248.0 $YB
+afe::via2 258.0 $YB
+afe::pbox met3 254.0 [expr {$YB-0.26}] 258.26 [expr {$YB+0.26}]
+afe::via 258.0 $YB; afe::m1v 258.0 $YB [T az1]; afe::via 258.0 [T az1]
+reg az1 258.0
+afe::m4h $YB 236.0 241.0
+afe::via3 237.0 $YB; afe::via2 237.0 $YB; afe::via 237.0 $YB
+afe::m1v 237.0 $YB [T vp]; afe::via 237.0 [T vp]
+reg vp 237.0
 
-afe::cap 8 8 326.0 0.0
-afe::via2 330.0 0.0
-afe::pbox met3 328.0 -0.26 330.26 0.26
-afe::via 330.0 0.0; afe::m1v 330.0 0.0 [T az2]; afe::via 330.0 [T az2]
-reg az2 330.0
-afe::m4h 0.0 316.0 321.0
-afe::via3 316.5 0.0; afe::via2 316.5 0.0; afe::via 316.5 0.0
-afe::m1v 316.5 0.0 [T vm]; afe::via 316.5 [T vm]
-reg vm 316.5
+afe::cap 8 8 260.0 $YB
+afe::via2 264.0 $YB
+afe::pbox met3 262.0 [expr {$YB-0.26}] 264.26 [expr {$YB+0.26}]
+afe::via 264.0 $YB; afe::m1v 264.0 $YB [T az2]; afe::via 264.0 [T az2]
+reg az2 264.0
+afe::m4h $YB 250.0 255.0
+afe::via3 250.5 $YB; afe::via2 250.5 $YB; afe::via 250.5 $YB
+afe::m1v 250.5 $YB [T vm]; afe::via 250.5 [T vm]
+reg vm 250.5
 
 # ===== Row A: Sample/Hold =====
 set X 3.5
@@ -141,7 +144,7 @@ set lo [expr {min([T gnd_tap],[T gnd])}]; set hi [expr {max([T gnd_tap],[T gnd])
 afe::pbox met3 [expr {$Xstrap-0.15}] $lo [expr {$Xstrap+0.15}] $hi
 reg gnd $Xstrap; reg gnd_tap $Xstrap
 
-# AZ pitch 2.5 → last cx≈300; vp@303 / plate@308 sit east
+# AZ pitch 2.5 → last cx≈300; plates now on Row B under ART (no Row-A plates).
 set X 278.0
 wFET [afe::fet nfet 0.36 0.15 [nxaz] 0.0] az1 vcm_h sample   gnd
 wFET [afe::fet pfet 0.72 0.15 [nxaz] 0.0] az1 vcm_h sample_b vdd
@@ -175,9 +178,9 @@ wRES [afe::res 1.75 [nx] $YB] n8  n9      gndB
 wRES [afe::res 1.75 [nx] $YB] n9  n10     gndB
 wRES [afe::res 1.75 [nx] $YB] n10 dac_out gndB
 
-# Power jogs WEST (clear of Chold); ladder jogs between vp@303 and plate@308.
+# Power jogs WEST (clear of Chold); ladder jogs east of AZ (~ends 300).
 set JOGS {{gnd gndB 18.0} {vdd vddB 20.5} {vref vrefB 23.0} \
-          {n3 n3b 304.5} {dac_out vdac 306.5}}
+          {n3 n3b 302.0} {dac_out vdac 304.0}}
 foreach j $JOGS { reg [lindex $j 0] [lindex $j 2]; reg [lindex $j 1] [lindex $j 2] }
 
 foreach n [array names TR] {
