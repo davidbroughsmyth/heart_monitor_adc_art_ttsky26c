@@ -126,10 +126,13 @@ stateDiagram-v2
   Emit --> Idle: sample_en_done
 ```
 
-1. **Idle** — `sample=1` (track); wait for `convert_strobe`.
+1. **Idle** — `sample=1` (track+AZ); hold `dac_bits=12'h800` (midscale); wait for
+   `convert_strobe`.
 2. **Sample** — `sample=0` (hold); prime `dac_bits` with MSB trial.
-3. **BitTrial** — for bits 11…0: settle DAC, sample `cmp_out` (`vin_hold >= dac`), update result.
-4. **Emit** — drive `adc_out`, pulse `sample_en` for 4 clocks, return to track.
+3. **BitTrial** — for bits 11…0: wait `SETTLE_CYCLES` (default 8) after updating
+   `dac_bits`, sample `cmp_out` (`vin_hold >= dac`), update result.
+4. **Emit** — drive `adc_out`, pulse `sample_en` for 4 clocks, return to track
+   (`dac_bits` back to midscale for AZ).
 
 Production: one convert every `50e6/500 = 100000` clocks. SAR latency is ~12–20 clocks,
 so most of the period is idle.
@@ -174,45 +177,32 @@ flowchart TB
   subgraph tile [tt_um_2x2]
     pwr[VDPWR_VGND_met4_stripes_left]
     digR[sar_digital_90x140]
-    artR[silicon_art_185x130_east]
-    chan[met3_met4_signal_channel]
-    afeR[afe_analog_dense_253x44_bottom]
+    artR[silicon_art_95x70_NE]
+    eastDig[east_dig_corridor]
+    afeR[afe_analog_dense_taller_east_overshoot]
   end
   pwr --- digR
-  digR --- artR
-  digR --- chan
-  chan --- afeR
+  digR --- eastDig
+  eastDig --- artR
+  digR --- afeR
 ```
 
 - Left: vertical `VDPWR` / `VGND` met4 stripes from DEF init.
-- Top: OpenLane `sar_digital` child (met4-max, no met5), analog pins (`cmp_out`,
-  `sample`, `dac_bits[11:0]`) on its **south edge**, facing down into the channel.
-- East of the macro: decorative **`silicon_art`** (185×130 µm) at `(140, 68)` —
-  met4 cat faces + hearts + `DBS` signature. Floating metal only (no pins / power);
-  no impact on SAR behavior. See [`mag/macros/silicon_art/`](../mag/macros/silicon_art/).
-- Bottom: the **dense** AFE `mag/afe_analog_dense` (S/H + comparator + folded
-  R-2R DAC), **253 × 44 µm**.
-- Between them: a met3-vertical / met4-horizontal channel carries all 14 signals;
-  `vin_ecg`→`ua[0]`, `vref`→`ua[1]` drop to the south analog pins, and
-  `gnd`/`vdd` tie to the `VGND`/`VDPWR` stripes.
-- **Why 2×2 and why "dense":** every `xN2` tile is 225.76 µm tall, so a 140 µm
-  macro + AFE + routing channel only fits if the AFE is short. The one-track-per-net
-  channel route is short-free but area-heavy: single-row `afe_analog` is ~400 × 66 µm;
-  folding the DAC (`afe_analog_folded`) gives 253 × 78 µm; tightening the track
-  pitch to 0.5 µm and closing the row gap (`afe_analog_dense`) gives **253 × 44 µm**
-  — all three LVS-clean vs `sar_afe.spice`. The dense cell is the one placed on-die.
-- **Digital I/O + power:** a second channel **above** the macro routes all 26
-  digital boundary nets (`clk`, `rst_n`, `uo_out[7:0]`, `uio_out[7:0]`,
-  `uio_oe[7:0]`) from the macro's north pins to the tile's north boundary pins
-  (`ui_in`/`uio_in` are sim-only proxies, unused in silicon). Both the AFE supplies
-  and the `sar_digital` PDN straps (`VPWR`/`VGND`) are physically bridged to the
-  `VDPWR`/`VGND` met4 stripes.
-- **Verified:** full-tile DRC is **clean** (KLayout `mr` FEOL+BEOL = 0, Magic
-  DRC = 0, including art offgrid snap); hierarchical full-tile connectivity LVS
-  (`make top-verify`) confirms every net — analog I/O, the shared DAC/sample/cmp
-  bus, all digital I/O to the boundary, and `sar_digital` `VPWR`→`VDPWR` (macro
-  powered; no floating supply).
-
+- Mid-upper: OpenLane `sar_digital` child (~y=65), analog pins on its **south**
+  edge into the AFE channel; dig I/O uses a **unique-y north channel**
+  (`203.7 + 0.82·i`) to boundary pins (shared-met4 east corridor shorts dig nets).
+- NE pocket: decorative **`silicon_art`** (**95×70 µm**) at `(210, 130)` —
+  met4 cats / hearts / `DBS`. Floating metal only. Sits above Row-B / CM / AZ.
+- Bottom: dense AFE (`afe_analog_dense`) — ~1 pF S/H + AZ comparator + compact
+  R-2R (~271×52 µm, 4+8 fold under art X — extract port-clean; netgen unique-match vs unit-R SPICE still open).
+- **Why 2×2:** tile height 225.76 µm limits stack-up. Keep `sar_digital`
+  hierarchical (do **not** flatten).
+- **Digital I/O + power:** unique-y dig tracks for 26 dig nets; PDN straps
+  bridge `VPWR`/`VGND` to the left `VDPWR`/`VGND` met4 stripes. Macro north pins
+  route to tile boundary pins (`clk`, `rst_n`, `uo_out`, `uio_out`, `uio_oe`).
+- **Verified:** hierarchical extract (`make top-verify`) confirms `ua[0]/1]`→AFE,
+  `sample`/`cmp_out`/12×`dac_bits`↔macro, all dig I/O to boundary, and
+  `sar_digital` `VPWR`→`VDPWR`.
 Rebuild: `cd mag && make update_gds`. See [`mag/README.md`](../mag/README.md)
 (analog custom_gds — not digital `tt_tool` local-harden).
 

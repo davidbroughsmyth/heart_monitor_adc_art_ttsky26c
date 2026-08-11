@@ -11,17 +11,27 @@ Schematic-level models of the silicon path:
 |---|---|
 | Ideal SPICE polarity bench | PASS (`./run_tb.sh`) |
 | sky130 PDK SPICE (TG S/H + **R-2R** DAC + OTA CMP) | PASS (`./run_tb_sky130.sh`, needs volare PDK) |
-| **Mixed-signal SAR (B1 lockstep, real AFE)** | PASS — monotonic 12-bit transfer through the real sky130 AFE (`./run_sar_lockstep.sh`) |
-| **Fully-silicon lockstep (real gate netlist + real AFE)** | PASS — hardened `sar_digital` gates (cocotb/iverilog) + real AFE (ngspice) agree with B1 code-for-code (`test/mixed_signal/run_ms.sh`) |
+| **Mixed-signal SAR (B1 lockstep, real AFE)** | Monotonic in ECG band; see **Accuracy (sim)** below (`./run_sar_lockstep.sh`) |
+| **Fully-silicon lockstep (real gate netlist + real AFE)** | Same AFE interface; re-run after macro copy (`test/mixed_signal/run_ms.sh`) |
 | Real-device Magic cells (`sky130_fd_pr` gencells) | **LVS-clean** — see table below |
 | `afe_analog` (connected S/H + comparator + 12-bit R-2R DAC), single row | **netgen LVS vs `sar_afe.spice`: Circuits match uniquely** (~400×66 µm) |
 | `afe_analog_folded` (same AFE, DAC folded into 2 rows) | **LVS vs `sar_afe.spice`: Circuits match uniquely** — **253×78 µm** |
-| `afe_analog_dense` (same netlist, 0.5 µm track pitch + closer rows) | **LVS vs `sar_afe.spice`: Circuits match uniquely** — **253×44 µm** (placed on-die) |
-| Signoff DRC (Magic, GDS round-trip) | Only benign `met1.6` gencell gate-pad tiles; **no real violations** |
-| Macro pins | `sar_digital` re-hardened with analog pins on the **south edge** |
-| Compact die-fit + routing to macro (**2×2**) | **Done** — `mag/build_top_2x2.tcl` places the dense AFE + macro and routes the full interface; DRC benign-only, connectivity extraction-verified |
+| `afe_analog_dense` (1 pF Chold, AZ cmp, compact R-2R) | **Extract port-clean** (~271×52 µm, 4+8 fold / CM+AZ under art X); netgen vs SPICE not unique yet (compact ladder / CM `l` proxy) |
+| Signoff DRC (Magic, GDS round-trip) | Aim benign `met1.6` only; confirm after `make top` |
+| Macro pins | `sar_digital` re-hardened (midscale-during-AZ FSM); south analog pins; `SETTLE_CYCLES=8` |
+| Compact die-fit + routing to macro (**2×2**) | **Done** — east dig corridor, raised macro, shrunk `silicon_art` (95×70) |
 | Full-tile netgen LVS (with std-cell netlist) | **Not done** |
-| 12-bit INL / DNL / ECG metrology | **TBD** |
+| Shuttle silicon characterization | **Still required** |
+
+### Accuracy (sim) — B1 lockstep @ 1.5 µs settle (tt, sky130)
+
+| Regime | Codes (approx) | Result |
+|---|---|---|
+| Endpoint fit (ECG-relevant set) | 0…4095 sparse | **offset ≈ 0…+3 LSB**; endpoint **INL ≈ 14…20 LSB** (fails hard ≤8 LSB gate) |
+| Mid / ECG band | ~248…2200 (baseline≈2048, R-peak target≥2200) | raw err roughly **±13…14 LSB** |
+| High FS | ≳3321 | **rails to 4095** (cmp tops boost >VDD after AZ); **deferred** — outside intended mid-biased ECG window |
+
+Comparator (SPICE): bottom-plate AZ while `sample=1`, asymmetric AZ CM (~0.16 V + ~6.4 mV δ), MiM C1/C2 = **24/10**, FSM holds **`dac_bits=12'h800`** during track+AZ. DAC: unit R with **extracted `l≈9.08`**, TG **W=8/16**. Chold ≈**1 pF** (`22×22` MiM).
 
 Per-block LVS (via `mag/verify_afe.sh`, all *Circuits match uniquely*):
 
@@ -34,19 +44,20 @@ Per-block LVS (via `mag/verify_afe.sh`, all *Circuits match uniquely*):
 | `afe_dac_folded` | `cdac_12b.spice` (12-bit, folded 2 rows, 186×75 µm) |
 | `afe_analog` | `sar_afe.spice` (whole AFE, single row) |
 | `afe_analog_folded` | `sar_afe.spice` (whole AFE, folded 2 rows, 253×78 µm) |
-| `afe_analog_dense` | `sar_afe.spice` (whole AFE, dense fold, 253×44 µm — placed on-die) |
+| `afe_analog_dense` | `sar_afe.spice` (whole AFE, dense fold — 1 pF Chold + AZ + unit R-2R) |
 
-The **DAC is an R-2R ladder** (not a capacitive CDAC). `cdac_12b.spice` uses real
-`sky130_fd_pr__res_xhigh_po_0p35` poly resistors (2R `l=3.34`, R `l=1.59`, guard →
-`gnd`) so the extracted layout matches under netgen.
+The **DAC is an R-2R ladder** (not a capacitive CDAC). `cdac_12b.spice` uses unit
+`sky130_fd_pr__res_xhigh_po_0p35` poly resistors (true **2R = two series R units**,
+drawn ≈`l=10` → extracted `l≈9.08`, guard → `gnd`) plus wide TGs (**W=8/16**) so Ron ≪ R.
+The comparator is **autozeroed during track** (`sample=1`); Chold is ≈**1 pF**
+MiM (`22×22`).
 
-**CI GDS builds** now assemble the **2×2** connected tile (`cd mag && make top`):
-the dense AFE `mag/afe_analog_dense` (253×44 µm) placed at the bottom, the
-`sar_digital` macro at the top (kept as a hierarchical child — do **not** flatten),
-and a met3/met4 channel wiring the full analog interface (`sample`,
-`dac_bits[11:0]`, `cmp_out`, `vin_ecg`→`ua[0]`, `vref`→`ua[1]`, power). DRC is
-benign-`met1.6`-only and connectivity is extraction-verified (`make top-verify`).
-
+**CI GDS builds** assemble the **2×2** connected tile (`cd mag && make top`):
+the dense AFE placed low (with east overshoot), `sar_digital` raised (~y=82)
+kept as a hierarchical child — do **not** flatten — dig I/O escapes via an
+**east corridor** then north to boundary pins, and shrunk decorative
+`silicon_art` (95×70 µm) in the NE pocket. DRC is benign-`met1.6`-only and
+connectivity is extraction-verified (`make top-verify`).
 ## Files
 
 | Path | Description |
@@ -76,12 +87,11 @@ the sky130 AFE** (`sar_afe.spice`): for each trial code it samples the DC input
 on the S/H, lets the DAC settle, and reads the analog `v(cmp_out)`. The whole
 sweep runs in one ngspice process (model setup paid once, then ~0.3 s/`tran`).
 
-It reports the measured transfer plus endpoint gain/offset/INL and gates on
-**monotonicity** (proof the SAR closes correctly through the real front-end).
-The raw error is large and dominated by the un-trimmed comparator input-referred
-offset (~+230 mV) and R-2R INL — this characterizes the best-effort AFE; it is
-not a harness issue. (Comparator offset trim / DAC ratio tuning is future work.)
-
+It reports the measured transfer plus endpoint gain/offset/INL. The historical
+hard gate was **monotonic** + **`|offset|`/`|INL| ≤ 8 LSB`**; current sky130 AZ
+meets ~**0 LSB offset** in the ECG mid-band but **~14–20 LSB** endpoint INL, with
+high-FS railing deferred for mid-biased ECG use. Shuttle silicon still needs
+characterization.
 ### Fully-silicon lockstep (real gate netlist + real AFE)
 
 `test/mixed_signal/` takes B1 one step further: instead of the Python FSM, the

@@ -434,8 +434,9 @@ MACRO sar_digital
       LAYER met3 ;
         RECT 21.050 10.715 72.630 128.005 ;
       LAYER met4 ;
-        RECT 48.135 47.775 58.140 103.865 ;
-        RECT 60.540 47.775 61.345 103.865 ;
+        RECT 39.855 36.895 45.640 84.145 ;
+        RECT 48.040 36.895 58.140 84.145 ;
+        RECT 60.540 36.895 67.785 84.145 ;
   END
 END sar_digital
 END LIBRARY

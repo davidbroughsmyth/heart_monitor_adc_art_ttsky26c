@@ -52,7 +52,8 @@ async def capture_conversion(dut) -> int:
 
 @cocotb.test()
 async def fully_silicon_lockstep(dut):
-    codes = [int(c) for c in os.environ.get("MS_CODES", "1024 2800").split()]
+    codes = [int(c) for c in os.environ.get(
+        "MS_CODES", "0 256 1024 2048 2800 4095").split()]
     afe = AFE(codes[0])
 
     stop = {"flag": False}
@@ -84,6 +85,7 @@ async def fully_silicon_lockstep(dut):
         cocotb.log.info(f"{'vin':>5} {'adc(gl)':>8} {'ref':>5} {'raw_err':>8}  match")
         fails = 0
         prev = None
+        results = []
         for i, code in enumerate(codes):
             if i > 0:
                 afe.set_vin(code)                 # next conversion uses new vin
@@ -91,6 +93,7 @@ async def fully_silicon_lockstep(dut):
             ref = ref_sar(afe)                    # same-AFE binary-search reference
             ok = (adc == ref)
             fails += not ok
+            results.append((code, adc))
             monotonic = "" if prev is None else (" mono" if adc >= prev else " NON-MONO")
             prev = adc
             cocotb.log.info(
@@ -98,10 +101,28 @@ async def fully_silicon_lockstep(dut):
                 f"{'OK' if ok else 'MISMATCH'}{monotonic}")
             assert ok, (f"gate-netlist adc={adc} != reference {ref} "
                         f"for vin_code={code} (same real AFE)")
+
+        # Accuracy gate (endpoint): |offset| and |INL| ≤ 8 LSB
+        vins = [c for c, _ in results]
+        adcs = [a for _, a in results]
+        lo, hi = vins[0], vins[-1]
+        span_in = hi - lo
+        gain = (adcs[-1] - adcs[0]) / span_in if span_in else float("nan")
+        offset = adcs[0] - gain * lo
+        inl = max(abs(a - (gain * c + offset)) for c, a in zip(vins, adcs)) \
+            if span_in else 0.0
+        mono = all(adcs[i] <= adcs[i + 1] for i in range(len(adcs) - 1))
+        MAX_LSB = 8.0
+        cocotb.log.info(
+            f"transfer: mono={mono} offset={offset:+.1f} LSB "
+            f"endpoint-INL={inl:.1f} LSB (gate ≤{MAX_LSB:.0f})")
+        assert mono, "fully-silicon transfer is non-monotonic"
+        assert abs(offset) <= MAX_LSB, f"|offset|={abs(offset):.1f} > {MAX_LSB}"
+        assert inl <= MAX_LSB, f"endpoint |INL|={inl:.1f} > {MAX_LSB}"
     finally:
         stop["flag"] = True
         afe.close()
 
     cocotb.log.info(
         "PASS: hardened gate netlist + real sky130 AFE agree with the "
-        "same-AFE SAR reference on every input.")
+        "same-AFE SAR reference; |offset| and endpoint |INL| ≤ 8 LSB.")

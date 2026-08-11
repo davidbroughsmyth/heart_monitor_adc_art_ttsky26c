@@ -1,13 +1,11 @@
-* cdac_12b.spice — R-2R ladder DAC with sky130 TG switches and REAL poly
-* resistors (sky130_fd_pr__res_xhigh_po_0p35, rho=2000 ohm/sq, guard->gnd).
-*   2R (drawn 3.5um -> extracted l=3.34) ~ 19k ; R (drawn 1.75 -> l=1.59) ~ 9.1k.
-* Ratio stays ~2:1 so polarity/behaviour holds; lengths chosen so the extracted
-* Magic layout (mag/afe_dac.tcl) matches net-for-net under netgen (which compares
-* poly resistors by device + l/w, not ohms).
+* cdac_12b.spice — R-2R ladder DAC, unit-based poly resistors + low-Ron TGs
+* Unit R: drawn-length-matched sky130_fd_pr__res_xhigh_po_0p35 (rho=2000).
+* True 2R = two series units (ratio by construction). Guard rings → gnd.
+* Drawn length ~16 → extracted l≈9.08 (same shrink as prior 1.75→1.59).
 
 .subckt tg a b en enb gnd vdd
-Xn a en b gnd sky130_fd_pr__nfet_01v8 W=1.0 L=0.15
-Xp a enb b vdd sky130_fd_pr__pfet_01v8 W=2.0 L=0.15
+Xn a en b gnd sky130_fd_pr__nfet_01v8 W=8.0 L=0.15
+Xp a enb b vdd sky130_fd_pr__pfet_01v8 W=16.0 L=0.15
 .ends tg
 
 .subckt bit_drive bit bitb gnd vdd
@@ -32,7 +30,7 @@ Xdb9 b9 b9b gnd vdd bit_drive
 Xdb10 b10 b10b gnd vdd bit_drive
 Xdb11 b11 b11b gnd vdd bit_drive
 
-* Each bit selects vref or gnd into ladder node snk_i
+* Each bit selects vref or gnd into ladder node snk_i (wide TGs, Ron ≪ R)
 Xt0r snk0 vref b0 b0b gnd vdd tg
 Xt0g snk0 gnd  b0b b0  gnd vdd tg
 Xt1r snk1 vref b1 b1b gnd vdd tg
@@ -58,32 +56,57 @@ Xt10g snk10 gnd  b10b b10 gnd vdd tg
 Xt11r snk11 vref b11 b11b gnd vdd tg
 Xt11g snk11 gnd  b11b b11 gnd vdd tg
 
-* R-2R ladder (poly resistors; 3rd terminal = guard ring tied to gnd).
-* Topology: dac_out -- R -- n10 -- R -- n9 ... -- R -- n0 -- 2R -- gnd
-*           each snk_i -- 2R -- node
-XRterm n0 gnd gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR2_0 snk0 n0 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR0 n0 n1 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
-XR2_1 snk1 n1 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR1 n1 n2 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
-XR2_2 snk2 n2 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR2 n2 n3 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
-XR2_3 snk3 n3 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR3 n3 n4 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
-XR2_4 snk4 n4 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR4 n4 n5 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
-XR2_5 snk5 n5 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR5 n5 n6 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
-XR2_6 snk6 n6 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR6 n6 n7 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
-XR2_7 snk7 n7 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR7 n7 n8 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
-XR2_8 snk8 n8 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR8 n8 n9 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
-XR2_9 snk9 n9 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR9 n9 n10 gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
-XR2_10 snk10 n10 gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
-XR10 n10 dac_out gnd sky130_fd_pr__res_xhigh_po_0p35 l=1.59
-XR2_11 snk11 dac_out gnd sky130_fd_pr__res_xhigh_po_0p35 l=3.34
+* Unit resistance length (extracted-equivalent for drawn l≈10)
+* Topology: dac_out -- R -- n10 -- R -- … -- R -- n0 -- 2R -- gnd
+*           each snk_i -- 2R(=R+R) -- node
+XRterm_a n0 mterm gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XRterm_b mterm gnd gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_0a snk0 m0 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_0b m0 n0 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR0 n0 n1 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_1a snk1 m1 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_1b m1 n1 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR1 n1 n2 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_2a snk2 m2 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_2b m2 n2 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2 n2 n3 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_3a snk3 m3 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_3b m3 n3 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR3 n3 n4 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_4a snk4 m4 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_4b m4 n4 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR4 n4 n5 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_5a snk5 m5 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_5b m5 n5 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR5 n5 n6 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_6a snk6 m6 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_6b m6 n6 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR6 n6 n7 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_7a snk7 m7 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_7b m7 n7 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR7 n7 n8 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_8a snk8 m8 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_8b m8 n8 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR8 n8 n9 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_9a snk9 m9 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_9b m9 n9 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR9 n9 n10 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_10a snk10 m10 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_10b m10 n10 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR10 n10 dac_out gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+
+XR2_11a snk11 m11 gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
+XR2_11b m11 dac_out gnd sky130_fd_pr__res_xhigh_po_0p35 l=9.08
 
 .ends cdac_12b

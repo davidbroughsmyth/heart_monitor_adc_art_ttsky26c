@@ -10,6 +10,6 @@ END UNITS
 MACRO silicon_art
    CLASS BLOCK ;
    FOREIGN silicon_art 0 0 ;
-   SIZE 185.000 BY 130.000 ;
+   SIZE 95.000 BY 70.000 ;
    SYMMETRY X Y ;
 END silicon_art
