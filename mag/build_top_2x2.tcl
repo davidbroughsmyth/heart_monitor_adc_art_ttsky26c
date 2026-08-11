@@ -95,17 +95,17 @@ proc sig {cx cy net ytr} {
 sig  140.37  -5.5  cmp_out  58.00
 sig   10.50   3.0  sample   58.82
 sig  150.00   7.0  b0       59.64
-sig  180.40   7.5  b1       60.46
-sig  210.80   8.0  b2       61.28
-sig  241.20   8.5  b3       62.10
+sig  178.00   7.5  b1       60.46
+sig  206.00   8.0  b2       61.28
+sig  234.00   8.5  b3       62.10
 sig   12.00  29.0  b4       62.92
-sig   29.20  29.5  b5       63.74
-sig   54.90  30.0  b6       64.56
-sig   80.60  30.5  b7       65.38
-sig  106.30  31.0  b8       66.20
-sig  132.00  31.5  b9       67.02
-sig  157.70  32.0  b10      67.84
-sig  183.40  32.5  b11      68.66
+sig   28.00  29.5  b5       63.74
+sig   52.50  30.0  b6       64.56
+sig   77.00  30.5  b7       65.38
+sig  101.50  31.0  b8       66.20
+sig  126.00  31.5  b9       67.02
+sig  150.50  32.0  b10      67.84
+sig  175.00  32.5  b11      68.66
 
 # ===== analog input pins: vin_ecg->ua[0]@152.26, vref->ua[1]@132.94 (south) =====
 proc ana {cx cy ydn xpin} {
@@ -177,7 +177,7 @@ for {set i 0} {$i<8} {incr i} {
   set BPX(uio_oe$i)  [lindex $oeB  $i]
 }
 # Dig tap ABOVE macro north (ytap=MNY+0.55). Keep via2 pad ≥0.36 for
-# Magic squares-grid cut emission (a=0.16 → via2.5 / m3.4 storm).
+# Magic squares-grid cut emission. met2-only-to-ytr shorts all dig ports.
 proc dig {net ytr2} {
   global MPX BPX DX MNY
   set mpx [expr {$DX+$MPX($net)}]

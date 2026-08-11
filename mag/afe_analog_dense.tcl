@@ -49,7 +49,7 @@ proc wRES {R na nb gnet} {
   reg $gnet [dict get $R gx]; afe::rguard $R [T $gnet]
 }
 proc nx {} { global X; set r $X; set X [expr {$X+3.5}]; return $r }
-proc nxaz {} { global X; set r $X; set X [expr {$X+3.0}]; return $r }
+proc nxaz {} { global X; set r $X; set X [expr {$X+2.5}]; return $r }
 proc nxgap {} { global X; set X [expr {$X+1.2}]; set r $X; set X [expr {$X+3.5}]; return $r }
 
 # ===== MiMs FIRST =====
@@ -63,21 +63,21 @@ afe::via3 25.5 0.0; afe::via2 25.5 0.0; afe::via 25.5 0.0
 afe::m1v 25.5 0.0 [T vhold]; afe::via 25.5 [T vhold]
 reg vhold 25.5
 
-# AZ MiMs far east. AZ ends ~308; plate left ≥310. Capm.SP.3 ≥2µm.
-# C1 12×12 @310 → 304..316; C2 8×8 @324 → 320..328; place@2.5 ≈331.
-afe::cap 12 12 310.0 0.0
-afe::via2 320.0 0.0
-afe::pbox met3 316.0 -0.26 320.26 0.26
-afe::via 320.0 0.0; afe::m1v 320.0 0.0 [T az1]; afe::via 320.0 [T az1]
-reg az1 320.0
-afe::m4h 0.0 296.0 305.0
-afe::via3 297.0 0.0; afe::via2 297.0 0.0; afe::via 297.0 0.0
-afe::m1v 297.0 0.0 [T vp]; afe::via 297.0 [T vp]
-reg vp 297.0
+# AZ MiMs far east. DIE local east ≤~332 @AOX=2.5. Capm.SP.3 ≥2µm.
+# C1 12×12 @314 → 308..320; C2 8×8 @326 → 322..330; via≈330.
+afe::cap 12 12 314.0 0.0
+afe::via2 324.0 0.0
+afe::pbox met3 320.0 -0.26 324.26 0.26
+afe::via 324.0 0.0; afe::m1v 324.0 0.0 [T az1]; afe::via 324.0 [T az1]
+reg az1 324.0
+afe::m4h 0.0 302.0 307.0
+afe::via3 303.0 0.0; afe::via2 303.0 0.0; afe::via 303.0 0.0
+afe::m1v 303.0 0.0 [T vp]; afe::via 303.0 [T vp]
+reg vp 303.0
 
-afe::cap 8 8 324.0 0.0
+afe::cap 8 8 326.0 0.0
 afe::via2 330.0 0.0
-afe::pbox met3 327.5 -0.26 330.26 0.26
+afe::pbox met3 328.0 -0.26 330.26 0.26
 afe::via 330.0 0.0; afe::m1v 330.0 0.0 [T az2]; afe::via 330.0 [T az2]
 reg az2 330.0
 afe::m4h 0.0 316.0 321.0
@@ -112,7 +112,7 @@ wFET [afe::fet pfet 2.00 0.15 [nxcmp] 0.0] vdd  mid     d2     vdd
 wFET [afe::fet nfet 0.84 0.15 [nxcmp] 0.0] gnd  cmp_out mid    gnd
 wFET [afe::fet pfet 1.68 0.15 [nxcmp] 0.0] vdd  cmp_out mid    vdd
 
-# ===== DAC bits 0..3 (3.5µm + gap before R) =====
+# ===== DAC bits 0..3 (c97-style nx pitch — nxgap grew FEOL licon storm) =====
 set X 150.0
 for {set i 0} {$i<4} {incr i} {
   wFET [afe::fet nfet 0.42 0.15 [nx] 0.0] gnd  b${i}b b$i    gnd
@@ -121,26 +121,27 @@ for {set i 0} {$i<4} {incr i} {
   wFET [afe::fet pfet 2.00 0.15 [nx] 0.0] vref snk$i b${i}b  vdd
   wFET [afe::fet nfet 1.00 0.15 [nx] 0.0] gnd  snk$i b${i}b  gnd
   wFET [afe::fet pfet 2.00 0.15 [nx] 0.0] gnd  snk$i b$i     vdd
-  wRES [afe::res 3.5 [nxgap] 0.0] snk$i n$i gnd
-  if {$i <= 2} { wRES [afe::res 1.75 [nxgap] 0.0] n$i n[expr {$i+1}] gnd }
+  wRES [afe::res 3.5 [nx] 0.0] snk$i n$i gnd
+  if {$i <= 2} { wRES [afe::res 1.75 [nx] 0.0] n$i n[expr {$i+1}] gnd }
 }
-wRES [afe::res 3.5 [nxgap] 0.0] n0 gnd gnd
+wRES [afe::res 3.5 [nx] 0.0] n0 gnd gnd
 
-# ===== CM + AZ — clear of b3 end~249; AZ ends ~266+30=296; plate@301 =====
-# Mid/bot L=3.5 (not 0.90): kill FEOL licon storm; same X as e066 (extract-clean).
-set X 262.0
+# ===== CM + AZ — c97 lengths (3.5 / 0.90 / 0.90); clear of DAC-A end~262 =====
+# L=3.5 mid caused FEOL+40 (licon CON/SP @~267). Keep short mid/bot like c97.
+set X 266.0
 wRES [afe::res 3.5 $X 0.0] vdd    vcm_h   gnd
-set X 267.0
-wRES [afe::res 3.5 $X 0.0] vcm_h  vcm_d   gnd
-set X 272.0
-wRES [afe::res 3.5 $X 0.0] vcm_d  gnd_tap gnd
-set Xstrap 275.0
+set X 271.0
+wRES [afe::res 0.90 $X 0.0] vcm_h  vcm_d   gnd
+set X 276.0
+wRES [afe::res 0.90 $X 0.0] vcm_d  gnd_tap gnd
+set Xstrap 279.0
 afe::via2 $Xstrap [T gnd_tap]
 afe::via2 $Xstrap [T gnd]
 set lo [expr {min([T gnd_tap],[T gnd])}]; set hi [expr {max([T gnd_tap],[T gnd])}]
 afe::pbox met3 [expr {$Xstrap-0.15}] $lo [expr {$Xstrap+0.15}] $hi
 reg gnd $Xstrap; reg gnd_tap $Xstrap
 
+# AZ pitch 2.5 → last cx≈300; vp@303 / plate@308 sit east
 set X 278.0
 wFET [afe::fet nfet 0.36 0.15 [nxaz] 0.0] az1 vcm_h sample   gnd
 wFET [afe::fet pfet 0.72 0.15 [nxaz] 0.0] az1 vcm_h sample_b vdd
@@ -163,20 +164,20 @@ for {set i 4} {$i<12} {incr i} {
   wFET [afe::fet nfet 1.00 0.15 [nx] $YB] gndB  snk$i b${i}b  gndB
   wFET [afe::fet pfet 2.00 0.15 [nx] $YB] gndB  snk$i b$i     vddB
   set nodei [expr {$i<11 ? "n$i" : "dac_out"}]
-  wRES [afe::res 3.5 [nxgap] $YB] snk$i $nodei gndB
+  wRES [afe::res 3.5 [nx] $YB] snk$i $nodei gndB
 }
-wRES [afe::res 1.75 [nxgap] $YB] n3b n4      gndB
-wRES [afe::res 1.75 [nxgap] $YB] n4  n5      gndB
-wRES [afe::res 1.75 [nxgap] $YB] n5  n6      gndB
-wRES [afe::res 1.75 [nxgap] $YB] n6  n7      gndB
-wRES [afe::res 1.75 [nxgap] $YB] n7  n8      gndB
-wRES [afe::res 1.75 [nxgap] $YB] n8  n9      gndB
-wRES [afe::res 1.75 [nxgap] $YB] n9  n10     gndB
-wRES [afe::res 1.75 [nxgap] $YB] n10 dac_out gndB
+wRES [afe::res 1.75 [nx] $YB] n3b n4      gndB
+wRES [afe::res 1.75 [nx] $YB] n4  n5      gndB
+wRES [afe::res 1.75 [nx] $YB] n5  n6      gndB
+wRES [afe::res 1.75 [nx] $YB] n6  n7      gndB
+wRES [afe::res 1.75 [nx] $YB] n7  n8      gndB
+wRES [afe::res 1.75 [nx] $YB] n8  n9      gndB
+wRES [afe::res 1.75 [nx] $YB] n9  n10     gndB
+wRES [afe::res 1.75 [nx] $YB] n10 dac_out gndB
 
-# Jogs between AZ (~ends 301) and plate@301 — sit on last AZ cols / west of plate.
-set JOGS {{gnd gndB 294.0} {vdd vddB 295.5} {vref vrefB 297.0} \
-          {n3 n3b 298.5} {dac_out vdac 300.0}}
+# Power jogs WEST (clear of Chold); ladder jogs between vp@303 and plate@308.
+set JOGS {{gnd gndB 18.0} {vdd vddB 20.5} {vref vrefB 23.0} \
+          {n3 n3b 304.5} {dac_out vdac 306.5}}
 foreach j $JOGS { reg [lindex $j 0] [lindex $j 2]; reg [lindex $j 1] [lindex $j 2] }
 
 foreach n [array names TR] {
