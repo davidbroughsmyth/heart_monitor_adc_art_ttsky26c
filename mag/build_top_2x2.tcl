@@ -46,10 +46,12 @@ proc m4v {x y0 y1} { set lo [expr {min($y0,$y1)}]; set hi [expr {max($y0,$y1)}]
 # via2 landing on an AFE met2 track (PP=0.5µm). Magic cifoutput VIA2 uses
 # `squares-grid` and only emits 0.2µm cuts inside the painted via∩metals
 # region — a marker painted exactly 0.2×0.2 usually streams ZERO cuts.
-# Half-height 0.18 (pad 0.36) is enough for a cut at these track Y's while
-# keeping met2.2 (>=0.14) to adjacent tracks/ports; 0.22 failed precheck.
+# Keep via2/met3 pads large enough for a cut, but keep the PARENT met2 apron
+# flush with the 0.16µm track (hy=0.08). A fat met2 apron (hy=0.18) scored
+# met2.2 against neighboring AFE via2 met2 pads (a=0.26) on adjacent tracks:
+#   gap = 0.5 - 0.18 - 0.26 = 0.06  (< 0.14). Flush apron → gap 0.16.
 proc tapvia2 {x y} {
-  afe::pbox met2 [expr {$x-0.30}] [expr {$y-0.18}] [expr {$x+0.30}] [expr {$y+0.18}]
+  afe::pbox met2 [expr {$x-0.36}] [expr {$y-0.08}] [expr {$x+0.36}] [expr {$y+0.08}]
   afe::pbox via2 [expr {$x-0.26}] [expr {$y-0.18}] [expr {$x+0.26}] [expr {$y+0.18}]
   afe::pbox met3 [expr {$x-0.26}] [expr {$y-0.26}] [expr {$x+0.26}] [expr {$y+0.26}]
 }

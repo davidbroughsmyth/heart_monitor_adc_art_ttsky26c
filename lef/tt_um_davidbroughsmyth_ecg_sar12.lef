@@ -454,7 +454,7 @@ MACRO tt_um_davidbroughsmyth_ecg_sar12
       LAYER met1 ;
         RECT 13.380 19.020 312.025 200.080 ;
       LAYER met2 ;
-        RECT 12.700 19.050 315.265 212.000 ;
+        RECT 12.640 19.050 315.265 212.000 ;
       LAYER met3 ;
         RECT 1.740 1.940 315.265 225.520 ;
       LAYER met4 ;
