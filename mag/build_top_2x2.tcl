@@ -17,9 +17,12 @@
 source afe_lib.tcl
 set TOP tt_um_davidbroughsmyth_ecg_sar12
 
-# ---- import 2x2 template (creates die + boundary pins ua/ui/uo/uio/clk...) ----
+# ---- import 2x2 template (creates die + boundary pins ua/ui/uo/clk...) ----
+# Never `load $TOP` before the first save — that would pull the previous
+# .mag and discard the DEF template.
 def read tt_analog_2x2.def
 cellname rename tt_um_template $TOP
+save $TOP
 load $TOP
 
 # ---- power stripes (left edge), per TT analog spec (met4, >=1.2um, y5..220.76) ----
@@ -52,16 +55,29 @@ proc tapvia2 {x y} {
 }
 
 # ---- place dense AFE off left PDN; AZ MiMs on Row B under ART.
-# AOX=10 clears VDPWR/VGND; east margin ~20µm after MiM fold.
+# Magic getcell aligns the content BBOX LL (not the cell origin) to the cursor
+# box. Ports sit at negative Y, so the origin ends up at AOX-cllx, AOY-clly.
+# Route using the TRUE origin (aox/aoy), not the cursor AOX/AOY.
+load afe_analog_dense
+select top cell
+set cb [box values]
+set cllx [expr {[lindex $cb 0]/200.0}]
+set clly [expr {[lindex $cb 1]/200.0}]
+puts "AFE_CELL_BBOX_LL $cllx $clly"
+load $TOP
 set AOX 10.0
 set AOY 17.0
 box ${AOX}um ${AOY}um [expr {$AOX+1}]um [expr {$AOY+1}]um
 getcell afe_analog_dense
 select cell afe_analog_dense_0
-set aox $AOX
-set aoy $AOY
-puts "AFE_ORIGIN aox=$aox aoy=$aoy"
+set abox [box values]
+# world_bbox_LL − child_bbox_LL = cell origin in parent
+set aox [expr {[lindex $abox 0]/200.0 - $cllx}]
+set aoy [expr {[lindex $abox 1]/200.0 - $clly}]
+puts "AFE_ORIGIN aox=$aox aoy=$aoy (cursor=$AOX,$AOY bboxLL=[expr {[lindex $abox 0]/200.0}],[expr {[lindex $abox 1]/200.0}])"
 select clear
+# Checkpoint before GDS import: `load $TOP` after gds read reloads from disk.
+save $TOP
 
 # ---- place sar_digital. met4.2 needs pitch ≥0.82 with via3 pads (a=0.26).
 #      DY=72 leaves channel for 14×0.82µm AFE↔macro met4; dig stays at 203.7+. ----
@@ -70,6 +86,11 @@ set MNY [expr {$DY+138.0}]     ;# macro north = 210
 gds readonly true ; gds rescale false ; gds flatten false
 gds read macros/sar_digital/sar_digital.gds
 load $TOP
+# Confirm AFE survived the save/load round-trip at the intended origin.
+select cell afe_analog_dense_0
+set abox [box values]
+puts "AFE_AFTER_LOAD inst_bbox=[lrange $abox 0 3] (expect LL near 2000 3400)"
+select clear
 box ${DX}um ${DY}um [expr {$DX+1}]um [expr {$DY+1}]um
 getcell sar_digital
 
@@ -90,22 +111,23 @@ proc sig {cx cy net ytr} {
   tapvia2 $xt $yt
 }
 # Port x from AFEPORT after cmp air-gaps rebuild.
-sig  140.37  -5.5  cmp_out  58.00
-sig   10.50   3.0  sample   58.82
-sig  150.00   7.0  b0       59.64
-sig  178.00   7.5  b1       60.46
-sig  206.00   8.0  b2       61.28
-sig  234.00   8.5  b3       62.10
-sig   12.00  29.0  b4       62.92
-sig   28.00  29.5  b5       63.74
-sig   52.50  30.0  b6       64.56
-sig   77.00  30.5  b7       65.38
-sig  101.50  31.0  b8       66.20
-sig  126.00  31.5  b9       67.02
-sig  150.50  32.0  b10      67.84
-sig  175.00  32.5  b11      68.66
+sig  140.92  -5.5  cmp_out  58.00
+sig    4.50   3.0  sample   58.82
+sig  149.45   7.0  b0       59.64
+sig  177.45   7.5  b1       60.46
+sig  205.45   8.0  b2       61.28
+sig  233.45   8.5  b3       62.10
+sig    2.95  29.0  b4       62.92
+sig   27.45  29.5  b5       63.74
+sig   51.95  30.0  b6       64.56
+sig   76.45  30.5  b7       65.38
+sig  100.95  31.0  b8       66.20
+sig  125.45  31.5  b9       67.02
+sig  149.95  32.0  b10      67.84
+sig  174.45  32.5  b11      68.66
 
 # ===== analog input pins: vin_ecg->ua[0]@152.26, vref->ua[1]@132.94 (south) =====
+# m4v must OVERLAP ua pin met4 (y0..1.0) — abutting y=1.0 left ua floating in extract.
 proc ana {cx cy ydn xpin} {
   global aox aoy
   set xt [expr {$aox+$cx}] ; set yt [expr {$aoy+$cy}]
@@ -113,14 +135,16 @@ proc ana {cx cy ydn xpin} {
   m3v $xt $yt $ydn
   afe::via3 $xt $ydn
   afe::m4h $ydn $xt $xpin
-  m4v $xpin $ydn 0.5
-  afe::pbox met4 [expr {$xpin-0.16}] [expr {$ydn-0.16}] [expr {$xpin+0.16}] [expr {$ydn+0.16}]
+  m4v $xpin $ydn 0.15
+  afe::pbox met4 [expr {$xpin-0.20}] 0.15 [expr {$xpin+0.20}] 0.85
 }
-ana  10.13  -4.5  3.8 152.26   ;# vin_ecg -> ua[0]
-ana 100.00  -4.0  2.2 132.94   ;# vref   -> ua[1] (ydn separated vs vin)
-
+# Tap X must match AFEPORT (met2 port pads west of vias) — filled after AFE rebuild.
+# ana  PORTX  T    ydn  ua_x
+ana   9.58  -4.5  3.8 152.26   ;# vin_ecg -> ua[0]
+ana  22.45  -4.0  2.2 132.94   ;# vref   -> ua[1]
 
 # ===== AFE power -> stripes (below the AFE) =====
+# VDPWR stripe x=1..3, VGND stripe x=4..6. Overlap pads into stripe metal.
 proc pwr {cx cy ydn xstripe} {
   global aox aoy
   set xt [expr {$aox+$cx}] ; set yt [expr {$aoy+$cy}]
@@ -128,18 +152,18 @@ proc pwr {cx cy ydn xstripe} {
   m3v $xt $yt $ydn
   afe::via3 $xt $ydn
   afe::m4h $ydn $xt $xstripe
+  afe::pbox met4 [expr {$xstripe-0.5}] [expr {$ydn-0.20}] [expr {$xstripe+0.5}] [expr {$ydn+0.20}]
 }
-pwr 2.545 -3.0 6.0 5.0        ;# AFE gnd -> VGND stripe (x4..6)
-# vdd -> VDPWR: hop under VGND on met3.
-set vt [expr {$aox+6.045}]
+# Placeholders retargeted from AFEPORT after rebuild.
+pwr  1.995 -3.0 6.0 5.0        ;# AFE gnd -> VGND
+# vdd -> VDPWR: hop on met3 (VGND stripe is met4 — a met4 hop at y=5
+# from x=2..vt crosses VGND and shorts VDPWR≡VGND). Land with via3 on VDPWR.
+set vt [expr {$aox+5.495}]
 tapvia2 $vt [expr {$aoy-3.5}]
 m3v $vt [expr {$aoy-3.5}] 5.0
-afe::via3 $vt 5.0
-afe::m4h 5.0 7.0 $vt
-afe::via3 7.0 5.0
-afe::pbox met3 1.3 4.84 7.16 5.16
+afe::pbox met3 [expr {min(2.0,$vt)-0.16}] 4.84 [expr {max(2.0,$vt)+0.16}] 5.16
 afe::via3 2.0 5.0
-
+afe::pbox met4 1.0 4.7 3.0 5.3
 # ===== macro PDN -> stripes (DY=72 → STRAPTOP≈200.08) =====
 # Bridges must sit ABOVE strap-top met3 (via3@200.5 stacked on STRAPTOP → met3.2)
 # and BELOW dig met4 (203.7+): pad ±0.26 needs ≥0.3µm clear.
@@ -202,7 +226,9 @@ foreach n $NETS { dig $n [expr {203.7 + 0.82*$i}] ; incr i }
 # ---- decorative silicon art (95×70) NE pocket above Row-B AZ MiMs ----
 set ART_X 210.0
 set ART_Y 130.0
+save $TOP
 gds read macros/silicon_art/silicon_art.gds
+load $TOP
 box ${ART_X}um ${ART_Y}um [expr {$ART_X+1}]um [expr {$ART_Y+1}]um
 getcell silicon_art
 puts "ART_PLACED at ($ART_X,$ART_Y)"

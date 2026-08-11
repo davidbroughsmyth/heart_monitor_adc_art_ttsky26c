@@ -18,7 +18,12 @@ proc afe::pbox {layer x0 y0 x1 y1} {
 }
 
 # Place a labeled port marker on a layer at a point (small pad already painted).
+# IMPORTANT: paint a dedicated pad FIRST, then label. Bare `port make` on a
+# point lands on the topmost material under the cursor — usually via1 from a
+# track via — so parent-level met2 taps never attach (extract keeps
+# afe_.../vin_ecg hierarchical). Only gnd was lucky (true met2 under the point).
 proc afe::mkport {layer x y name} {
+    afe::pbox $layer [expr {$x-0.28}] [expr {$y-0.16}] [expr {$x+0.28}] [expr {$y+0.16}]
     box ${x}um ${y}um ${x}um ${y}um
     label $name center $layer
     port make

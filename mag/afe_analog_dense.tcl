@@ -193,6 +193,18 @@ foreach j $JOGS {
   afe::pbox met3 [expr {$x-0.15}] $lo [expr {$x+0.15}] $hi
 }
 
+# Hierarchy ports on met2 west of first via/jogs so parent met2 taps attach
+# (port make otherwise lands on via1/via2 buried under the track via).
+foreach n [array names TR] {
+  if {[info exists VMN($n)]} {
+    set VMN($n) [expr {$VMN($n) - 0.55}]
+    afe::m2h [T $n] [expr {$VMN($n)-0.2}] [expr {$VMX($n)+0.2}]
+  }
+}
+# cmp_out: port near VMX east (sig taps VMX); nudge off any via at VMX
+set VMX(cmp_out) [expr {$VMX(cmp_out) + 0.55}]
+afe::m2h [T cmp_out] [expr {$VMN(cmp_out)-0.2}] [expr {$VMX(cmp_out)+0.2}]
+
 afe::mkport met2 $VMN(vin)     [T vin]     vin_ecg
 afe::mkport met2 $VMN(vref)    [T vref]    vref
 afe::mkport met2 $VMN(gnd)     [T gnd]     gnd
@@ -202,9 +214,17 @@ afe::mkport met2 $VMX(cmp_out) [T cmp_out] cmp_out
 for {set i 0} {$i<12} {incr i} { afe::mkport met2 $VMN(b$i) [T b$i] b$i }
 
 select top cell
+# Never leave FIXED_BBOX on this full layout cell — getcell would align the
+# abstract bbox instead of the origin and parent taps would miss every port.
+catch {property FIXED_BBOX {}}
 puts "AFE_ANALOG_DENSE_BBOX [box values]"
 foreach n [list vin vref gnd vdd sample cmp_out b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11] {
   puts "AFEPORT $n T=[T $n] VMN=$VMN($n) VMX=$VMX($n)"
 }
 save $CELL
+# Guard: refuse a FIXED_BBOX on disk (breaks top routing by ~0.74×3.52µm).
+set _fp [open ${CELL}.mag r]; set _m [read $_fp]; close $_fp
+if {[string match "*FIXED_BBOX*" $_m]} {
+  puts "ERROR: FIXED_BBOX still present after save — strip before top assembly"
+}
 quit -noprompt
